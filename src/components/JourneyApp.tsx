@@ -255,6 +255,7 @@ export function JourneyApp() {
           setPicked(null);
           setSession(null);
           setRows([]);
+          setNow(new Date());
         },
         disabled: false,
       };
@@ -264,7 +265,15 @@ export function JourneyApp() {
 
   function beginPay(outcome: "success" | "debit_no_ticket") {
     if (!picked) return;
-    const clock = new Date();
+    if (
+      session?.status === "debit_no_ticket" ||
+      session?.status === "resuming" ||
+      session?.status === "paying" ||
+      step === "paying"
+    ) {
+      return;
+    }
+    const clock = now;
     const idle = createIdleSession(
       farePaise,
       `gmh-${picked.train.id}-${clock.getTime()}`,
@@ -283,7 +292,11 @@ export function JourneyApp() {
 
   function doResume(outcome: "success" | "still_failed") {
     if (!session) return;
-    const clock = new Date();
+    if (step === "paying" || session.status === "resuming") return;
+    const clock = now;
+    const gate = canResume(session, clock);
+    if (!gate.ok) return;
+    setStep("paying");
     try {
       let pay = startResume(session, clock);
       setSession(pay);
@@ -297,7 +310,7 @@ export function JourneyApp() {
         setStep(pay.status === "success" ? "ticket" : "failed");
       }, prefersReducedMotion() ? 0 : 500);
     } catch {
-      setStep("failed");
+      setStep("recovery");
     }
   }
 
@@ -586,7 +599,7 @@ export function JourneyApp() {
                 type="button"
                 className="cta ghost"
                 onClick={() => doResume("still_failed")}
-                disabled={story}
+                disabled={story || !canResume(session, now).ok}
               >
                 {t(lang, "stillFailed")}
               </button>
@@ -612,7 +625,11 @@ export function JourneyApp() {
 
           {primaryCta && step !== "results" ? (
             <div className="cta-dock">
-              {step !== "map" && step !== "ticket" && step !== "failed" && step !== "paying" ? (
+              {step !== "map" &&
+              step !== "ticket" &&
+              step !== "failed" &&
+              step !== "paying" &&
+              step !== "recovery" ? (
                 <div className="cta-row">
                   <button
                     type="button"
@@ -621,7 +638,6 @@ export function JourneyApp() {
                     onClick={() => {
                       if (step === "passengers") setStep("results");
                       else if (step === "review") setStep("passengers");
-                      else if (step === "recovery") setStep("review");
                     }}
                   >
                     ←

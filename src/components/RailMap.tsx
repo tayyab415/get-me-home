@@ -1,7 +1,7 @@
 "use client";
 
 import { useId, useMemo, useRef, useState } from "react";
-import { MUMBAI_DEFAULT, project, unproject, type LatLng } from "@/lib/geo";
+import { project, unproject, type LatLng } from "@/lib/geo";
 import { RAIL_CORRIDORS, STATIONS, stationLatLng } from "@/lib/rail-graph";
 
 const INDIA_RING: LatLng[] = [
@@ -225,7 +225,6 @@ export function RailMap({
         />
         <circle cy="-16" r="4.2" fill="#07090e" />
       </g>
-      {pin.lat === MUMBAI_DEFAULT.lat ? null : null}
     </svg>
   );
 }
