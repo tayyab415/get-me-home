@@ -41,4 +41,16 @@ describe("originating-station clock and catchability", () => {
     expect(rows[0].catch.catchable).toBe(true);
     expect(rows.some((r) => !r.catch.catchable)).toBe(true);
   });
+
+  it("includes trains that stop at Ratnagiri, not only trains that terminate there", () => {
+    const rows = searchTrains({
+      pin,
+      destCodes: ["RN"],
+      journeyDateIst: "2026-08-25",
+      coach: "3A",
+      now,
+    });
+    expect(rows.some((r) => r.train.id === "konkan-rain")).toBe(true);
+    expect(rows.every((r) => r.train.destinationCode === "RN")).toBe(false);
+  });
 });

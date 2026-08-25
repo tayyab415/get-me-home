@@ -18,7 +18,9 @@ export function searchTrains(args: {
   now: Date;
 }): RankedTrain[] {
   const dest = new Set(args.destCodes);
-  const matches = TRAINS.filter((tr) => dest.has(tr.destinationCode));
+  const matches = TRAINS.filter((tr) =>
+    tr.stops.some((stop, index) => index > 0 && dest.has(stop.stationCode)),
+  );
   const ranked = matches.map((train) => {
     const catchability = evaluateCatch(args.pin, train, args.journeyDateIst, args.now);
     const availability = classFare(train, args.coach);
