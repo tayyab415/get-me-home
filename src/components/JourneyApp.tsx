@@ -28,7 +28,7 @@ import {
   type PaymentSession,
 } from "@/lib/payment-machine";
 import { nextTraveller, searchTrains, seedTravellers, type RankedTrain, type Traveller } from "@/lib/search";
-import { fill, localeFor, t, type Lang, type StringKey } from "@/lib/i18n";
+import { fill, localeFor, t, LEDGER_NOTE_KEYS, type Lang } from "@/lib/i18n";
 import { formatIstLong } from "@/lib/catchability";
 import { issueMockTicket } from "@/lib/ticket";
 
@@ -44,13 +44,6 @@ type Step =
 
 const DEMO_NOW = new Date("2026-08-25T09:20:00+05:30");
 const CLASSES: CoachClass[] = ["SL", "3A", "2A", "CC"];
-
-const LEDGER_NOTES: Record<string, StringKey> = {
-  "Single debit. PNR issued.": "ledgerNoteDebitPnr",
-  "Debit succeeded. Ticket/PNR not issued.": "ledgerNoteDebitNoTicket",
-  "Idempotent resume. No second debit. PNR issued against original charge.": "ledgerNoteResumePnr",
-  "Idempotent resume. No second debit. Ticket still not issued.": "ledgerNoteResumeFail",
-};
 
 function sleep(ms: number, signal: { cancelled: boolean }) {
   return new Promise<void>((resolve) => {
@@ -84,7 +77,7 @@ function markIndex(step: Step): number {
 
 function ledgerLabel(lang: Lang, entry: LedgerEntry): string {
   const kind = entry.kind === "debit" ? t(lang, "ledgerKindDebit") : t(lang, "ledgerKindResume");
-  const key = LEDGER_NOTES[entry.note];
+  const key = LEDGER_NOTE_KEYS[entry.note];
   const note = key ? t(lang, key) : entry.note;
   return `${kind} · ${formatInrFromPaise(entry.amountPaise, localeFor(lang))} · ${note}`;
 }
@@ -259,7 +252,7 @@ export function JourneyApp() {
       return {
         label: t(lang, "findTrains"),
         action: () => runSearch(),
-        disabled: !destCodes.length || story || !now,
+        disabled: story || !now,
       };
     }
     if (step === "passengers") {

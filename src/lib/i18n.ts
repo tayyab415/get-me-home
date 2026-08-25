@@ -268,3 +268,10 @@ export function formatTravel(lang: Lang, minutes: number): string {
   if (!m) return fill(t(lang, "hoursFmt"), { n: String(h) });
   return fill(t(lang, "hoursMinsFmt"), { h: String(h), m: String(m) });
 }
+
+export const LEDGER_NOTE_KEYS: Record<string, StringKey> = {
+  "Single debit. PNR issued.": "ledgerNoteDebitPnr",
+  "Debit succeeded. Ticket/PNR not issued.": "ledgerNoteDebitNoTicket",
+  "Idempotent resume. No second debit. PNR issued against original charge.": "ledgerNoteResumePnr",
+  "Idempotent resume. No second debit. Ticket still not issued.": "ledgerNoteResumeFail",
+};

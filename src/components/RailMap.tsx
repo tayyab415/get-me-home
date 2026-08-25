@@ -135,6 +135,11 @@ export function RailMap({
   const water = useMemo(() => toPath(KONKAN_WATER), []);
   const mumbai = project({ lat: 19.076, lng: 72.8777 });
   const delhi = project({ lat: 28.6139, lng: 77.209 });
+  const denseType = /[\u0900-\u097F]/.test(labels.arabian);
+  const geoFont = denseType
+    ? "var(--font-ui), sans-serif"
+    : "var(--font-display), var(--font-ui), sans-serif";
+  const geoTrack = denseType ? "0.02em" : "0.16em";
 
   function clientToLatLng(clientX: number, clientY: number): LatLng | null {
     const svg = svgRef.current;
@@ -289,21 +294,21 @@ export function RailMap({
         x="42"
         y="268"
         fill="#8aa0c0"
-        fontSize="8"
-        letterSpacing="0.18em"
-        fontFamily="var(--font-display), var(--font-ui), sans-serif"
-        opacity="0.7"
+        fontSize={denseType ? 9 : 8}
+        letterSpacing={geoTrack}
+        fontFamily={geoFont}
+        opacity="0.8"
       >
         {labels.arabian}
       </text>
       <text
-        x="268"
+        x="258"
         y="250"
         fill="#8aa0c0"
-        fontSize="8"
-        letterSpacing="0.16em"
-        fontFamily="var(--font-display), var(--font-ui), sans-serif"
-        opacity="0.7"
+        fontSize={denseType ? 9 : 8}
+        letterSpacing={geoTrack}
+        fontFamily={geoFont}
+        opacity="0.8"
       >
         {labels.bengal}
       </text>
@@ -311,10 +316,10 @@ export function RailMap({
         x="168"
         y="58"
         fill="#cbb99a"
-        fontSize="8"
-        letterSpacing="0.2em"
-        fontFamily="var(--font-display), var(--font-ui), sans-serif"
-        opacity="0.75"
+        fontSize={denseType ? 9 : 8}
+        letterSpacing={geoTrack}
+        fontFamily={geoFont}
+        opacity="0.85"
       >
         {labels.himalaya}
       </text>
@@ -322,10 +327,10 @@ export function RailMap({
         x="14"
         y="506"
         fill="#f0a202"
-        fontSize="9"
-        letterSpacing="0.16em"
-        fontFamily="var(--font-display), var(--font-ui), sans-serif"
-        opacity="0.85"
+        fontSize={denseType ? 10 : 9}
+        letterSpacing={geoTrack}
+        fontFamily={geoFont}
+        opacity="0.9"
       >
         {labels.mock}
       </text>
@@ -335,9 +340,9 @@ export function RailMap({
         <text
           y="20"
           textAnchor="middle"
-          fontSize="7"
-          letterSpacing="0.12em"
-          fontFamily="var(--font-display), sans-serif"
+          fontSize={denseType ? 9 : 7}
+          letterSpacing={denseType ? "0.02em" : "0.12em"}
+          fontFamily={geoFont}
         >
           {labels.north}
         </text>
