@@ -65,8 +65,6 @@ npm run dev
 
 Then open [http://localhost:3000](http://localhost:3000).
 
-Temporary cloud preview URLs are not the durable public URL for this prototype.
-
 ## Demo seed
 
 Use **Play the citizen story** for a two-minute recording (minute one as citizen):
