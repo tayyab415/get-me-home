@@ -396,7 +396,7 @@ export function JourneyApp() {
         </div>
       </header>
 
-      <div className="stage">
+      <div className={step === "map" ? "stage" : "stage is-flow"}>
         <div className="map-wrap">
           <OptionalGoogleMap pin={pin} />
           <RailMap
@@ -475,6 +475,11 @@ export function JourneyApp() {
             ))}
           </div>
           {story ? <p className="hint">{t(lang, "playingStory")}</p> : null}
+          {step === "map" && error === "emptyDest" ? (
+            <div className="empty-state" role="alert">
+              <h3>{t(lang, "emptyDest")}</h3>
+            </div>
+          ) : null}
           {step === "map" ? (
             <>
               <button
@@ -492,11 +497,6 @@ export function JourneyApp() {
 
           {step === "map" ? (
             <>
-              {error === "emptyDest" ? (
-                <div className="empty-state" role="alert">
-                  <h3>{t(lang, "emptyDest")}</h3>
-                </div>
-              ) : null}
               <label className="field">
                 {t(lang, "movePin")}
                 <input

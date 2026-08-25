@@ -225,8 +225,13 @@ html[lang="hi"] .kicker {
   grid-template-rows: minmax(300px, 58vh) 1fr;
 }
 
+.stage.is-flow {
+  grid-template-rows: minmax(168px, 32vh) 1fr;
+}
+
 @media (min-width: 900px) {
-  .stage {
+  .stage,
+  .stage.is-flow {
     grid-template-rows: none;
     grid-template-columns: 1.18fr 0.82fr;
     min-height: calc(100dvh - var(--banner) - 56px);
