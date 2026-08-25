@@ -85,7 +85,7 @@ export function JourneyApp() {
   const [destLabel, setDestLabel] = useState("");
   const [journeyDate, setJourneyDate] = useState("");
   const [coach, setCoach] = useState<CoachClass>("3A");
-  const [now, setNow] = useState(() => new Date(0));
+  const [now, setNow] = useState<Date | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [rows, setRows] = useState<RankedTrain[]>([]);
@@ -93,8 +93,10 @@ export function JourneyApp() {
   const [travellers, setTravellers] = useState<Traveller[]>(() => seedTravellers());
   const [session, setSession] = useState<PaymentSession | null>(null);
   const [story, setStory] = useState(false);
+  const [reduceMotion, setReduceMotion] = useState(false);
   const cancelRef = useRef({ cancelled: false });
   const payLockRef = useRef(false);
+  const storyLockRef = useRef(false);
   const mapsKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_KEY;
   const monsoon = destCodes.includes("MAO") || destCodes.includes("RN") || Boolean(picked?.train.monsoonWatch);
 
@@ -108,6 +110,14 @@ export function JourneyApp() {
     const clock = new Date();
     setNow(clock);
     setJourneyDate(defaultJourneyDate(clock));
+  }, []);
+
+  useEffect(() => {
+    const media = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const sync = () => setReduceMotion(media.matches);
+    sync();
+    media.addEventListener("change", sync);
+    return () => media.removeEventListener("change", sync);
   }, []);
 
   useEffect(() => {
@@ -132,6 +142,9 @@ export function JourneyApp() {
       setError("emptyDest");
       return [];
     }
+    if (!clock) {
+      return [];
+    }
     setError(null);
     setLoading(true);
     try {
@@ -154,8 +167,11 @@ export function JourneyApp() {
   }
 
   async function playCitizenStory() {
+    if (storyLockRef.current) return;
+    storyLockRef.current = true;
     cancelRef.current.cancelled = false;
     setStory(true);
+    try {
     const wait = (ms: number) => sleep(prefersReducedMotion() ? 0 : ms, cancelRef.current);
     const bandra = PLACES.find((p) => p.id === "bandra")!;
     setNow(DEMO_NOW);
@@ -176,7 +192,6 @@ export function JourneyApp() {
     await wait(2800);
     const night = found.find((r) => r.train.id === "night-mail") ?? found.find((r) => r.catch.catchable);
     if (!night) {
-      setStory(false);
       return;
     }
     setPicked(night);
@@ -213,7 +228,10 @@ export function JourneyApp() {
     pay = resolveResume(pay, "success", issued, new Date("2026-08-25T09:22:04+05:30"));
     setSession(pay);
     setStep("ticket");
-    setStory(false);
+    } finally {
+      setStory(false);
+      storyLockRef.current = false;
+    }
   }
 
   function applyPlace() {
@@ -226,7 +244,7 @@ export function JourneyApp() {
       return {
         label: t(lang, "findTrains"),
         action: () => runSearch(),
-        disabled: !destCodes.length || story,
+        disabled: !destCodes.length || story || !now,
       };
     }
     if (step === "passengers") {
@@ -251,7 +269,7 @@ export function JourneyApp() {
       return {
         label: t(lang, "resume"),
         action: () => doResume("success"),
-        disabled: story || !canResume(session, now).ok,
+        disabled: story || !now || !canResume(session, now).ok,
       };
     }
     if (step === "ticket" || step === "failed") {
@@ -259,6 +277,7 @@ export function JourneyApp() {
         label: t(lang, "newSearch"),
         action: () => {
           payLockRef.current = false;
+          storyLockRef.current = false;
           const clock = new Date();
           setStep("map");
           setPicked(null);
@@ -274,7 +293,7 @@ export function JourneyApp() {
   })();
 
   function beginPay(outcome: "success" | "debit_no_ticket") {
-    if (!picked) return;
+    if (!picked || !now) return;
     if (payLockRef.current) return;
     if (
       session?.status === "debit_no_ticket" ||
@@ -304,7 +323,7 @@ export function JourneyApp() {
   }
 
   function doResume(outcome: "success" | "still_failed") {
-    if (!session) return;
+    if (!session || !now) return;
     if (payLockRef.current) return;
     if (step === "paying" || session.status === "resuming") return;
     const clock = now;
@@ -374,7 +393,7 @@ export function JourneyApp() {
               {t(lang, "whereYouAre")} · {pin.lat.toFixed(3)}, {pin.lng.toFixed(3)}
             </span>
             <span className="chip">
-              {t(lang, "clockMock")}: {formatIstLong(now)}
+              {t(lang, "clockMock")}: {now ? formatIstLong(now) : "—"}
             </span>
           </div>
         </div>
@@ -389,7 +408,7 @@ export function JourneyApp() {
             {story ? t(lang, "playingStory") : t(lang, "playStory")}
           </button>
           <p className="hint">{t(lang, "storyCaption")}</p>
-          {prefersReducedMotion() ? <p className="hint">{t(lang, "skipMotion")}</p> : null}
+          {reduceMotion ? <p className="hint">{t(lang, "skipMotion")}</p> : null}
 
           {step === "map" ? (
             <>
@@ -616,7 +635,7 @@ export function JourneyApp() {
                 type="button"
                 className="cta ghost"
                 onClick={() => doResume("still_failed")}
-                disabled={story || !canResume(session, now).ok}
+                disabled={story || !now || !canResume(session, now).ok}
               >
                 {t(lang, "stillFailed")}
               </button>
