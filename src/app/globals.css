@@ -369,11 +369,15 @@ html[lang="hi"] .kicker {
 }
 
 .hud-card label.field {
-  margin-bottom: 8px;
+  margin-bottom: 6px;
+  font-size: 0.68rem;
+  gap: 4px;
 }
 
-.hud-card label.field:last-child {
-  margin-bottom: 0;
+.hud-card label.field input,
+.hud-card label.field select {
+  min-height: 44px;
+  padding: 8px 10px;
 }
 
 .hud-tokens {

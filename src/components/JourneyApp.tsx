@@ -375,68 +375,6 @@ export function JourneyApp() {
   const highlight = picked?.catch.boardingCode;
   const activeMark = markIndex(step);
 
-  const searchFields = (
-    <>
-      <label className="field">
-        {t(lang, "movePin")}
-        <input
-          value={placeText}
-          placeholder={t(lang, "placePlaceholder")}
-          onChange={(e) => setPlaceText(e.target.value)}
-          onBlur={applyPlace}
-          disabled={story}
-          onKeyDown={(e) => {
-            if (e.key === "Enter") applyPlace();
-          }}
-        />
-      </label>
-      <label className="field">
-        {t(lang, "destination")}
-        <input
-          value={destText}
-          placeholder={t(lang, "destPlaceholder")}
-          onChange={(e) => setDestText(e.target.value)}
-          disabled={story}
-        />
-      </label>
-      {destCodes.length ? (
-        <div className="station-chips" aria-live="polite">
-          {destCodes.map((c) => (
-            <span key={c}>
-              {c} · {lang === "hi" ? STATION_BY_CODE[c].nameHi : STATION_BY_CODE[c].nameEn}
-            </span>
-          ))}
-        </div>
-      ) : null}
-      {destLabel ? <p className="hint" style={{ marginBottom: 8 }}>{destLabel}</p> : null}
-      <div className="hud-tokens">
-        <label className="field">
-          {t(lang, "journeyDate")}
-          <input
-            type="date"
-            value={journeyDate}
-            onChange={(e) => setJourneyDate(e.target.value)}
-            disabled={story}
-          />
-        </label>
-        <label className="field">
-          {t(lang, "coachClass")}
-          <select
-            value={coach}
-            onChange={(e) => setCoach(e.target.value as CoachClass)}
-            disabled={story}
-          >
-            {CLASSES.map((c) => (
-              <option key={c} value={c}>
-                {c} · {t(lang, ({ SL: "classSL", "3A": "class3A", "2A": "class2A", CC: "classCC" } as const)[c])}
-              </option>
-            ))}
-          </select>
-        </label>
-      </div>
-    </>
-  );
-
   return (
     <div className="app">
       <header className="topbar">
@@ -486,7 +424,40 @@ export function JourneyApp() {
           <div className="map-hud">
             <div className="hud-card">
               {step === "map" ? (
-                searchFields
+                <>
+                  <label className="field">
+                    {t(lang, "destination")}
+                    <input
+                      value={destText}
+                      placeholder={t(lang, "destPlaceholder")}
+                      onChange={(e) => setDestText(e.target.value)}
+                      disabled={story}
+                    />
+                  </label>
+                  <label className="field">
+                    {t(lang, "movePin")}
+                    <input
+                      value={placeText}
+                      placeholder={t(lang, "placePlaceholder")}
+                      onChange={(e) => setPlaceText(e.target.value)}
+                      onBlur={applyPlace}
+                      disabled={story}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") applyPlace();
+                      }}
+                    />
+                  </label>
+                  {destCodes.length ? (
+                    <div className="station-chips" aria-live="polite">
+                      {destCodes.map((c) => (
+                        <span key={c}>
+                          {c} · {lang === "hi" ? STATION_BY_CODE[c].nameHi : STATION_BY_CODE[c].nameEn}
+                        </span>
+                      ))}
+                    </div>
+                  ) : null}
+                  {destLabel ? <p className="hint" style={{ marginBottom: 0 }}>{destLabel}</p> : null}
+                </>
               ) : (
                 <>
                   <p className="kicker" style={{ marginBottom: 4 }}>
@@ -537,6 +508,31 @@ export function JourneyApp() {
           {step === "map" ? (
             <>
               <p className="hint">{t(lang, "destHint")}</p>
+              <div className="row-2">
+                <label className="field">
+                  {t(lang, "journeyDate")}
+                  <input
+                    type="date"
+                    value={journeyDate}
+                    onChange={(e) => setJourneyDate(e.target.value)}
+                    disabled={story}
+                  />
+                </label>
+                <label className="field">
+                  {t(lang, "coachClass")}
+                  <select
+                    value={coach}
+                    onChange={(e) => setCoach(e.target.value as CoachClass)}
+                    disabled={story}
+                  >
+                    {CLASSES.map((c) => (
+                      <option key={c} value={c}>
+                        {c} · {t(lang, ({ SL: "classSL", "3A": "class3A", "2A": "class2A", CC: "classCC" } as const)[c])}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              </div>
               {error === "emptyDest" ? (
                 <div className="empty-state">{t(lang, "emptyDest")}</div>
               ) : null}

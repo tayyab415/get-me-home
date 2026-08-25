@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
-import { Big_Shoulders_Display, Fraunces, Noto_Sans_Devanagari } from "next/font/google";
+import { Big_Shoulders, Fraunces, Noto_Sans_Devanagari } from "next/font/google";
 import { PrototypeBanner } from "@/components/PrototypeBanner";
 import "./globals.css";
 
-const display = Big_Shoulders_Display({
+const display = Big_Shoulders({
   subsets: ["latin"],
   variable: "--font-display",
   weight: ["500", "600", "700", "800"],
