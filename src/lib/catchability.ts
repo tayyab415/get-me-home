@@ -140,8 +140,8 @@ export function classFare(train: TrainService, coach: CoachClass): ClassAvailabi
   return train.classes.find((c) => c.coach === coach);
 }
 
-export function formatIstClock(date: Date): string {
-  return new Intl.DateTimeFormat("en-IN", {
+export function formatIstClock(date: Date, locale = "en-IN"): string {
+  return new Intl.DateTimeFormat(locale, {
     timeZone: "Asia/Kolkata",
     hour: "2-digit",
     minute: "2-digit",
@@ -149,8 +149,8 @@ export function formatIstClock(date: Date): string {
   }).format(date);
 }
 
-export function formatIstLong(date: Date): string {
-  return new Intl.DateTimeFormat("en-IN", {
+export function formatIstLong(date: Date, locale = "en-IN"): string {
+  return new Intl.DateTimeFormat(locale, {
     timeZone: "Asia/Kolkata",
     weekday: "short",
     day: "numeric",

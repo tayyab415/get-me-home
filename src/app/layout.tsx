@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
-import { Fraunces, Syne, Noto_Sans_Devanagari } from "next/font/google";
+import { Big_Shoulders_Display, Fraunces, Noto_Sans_Devanagari } from "next/font/google";
 import { PrototypeBanner } from "@/components/PrototypeBanner";
 import "./globals.css";
 
-const syne = Syne({
+const display = Big_Shoulders_Display({
   subsets: ["latin"],
   variable: "--font-display",
   weight: ["500", "600", "700", "800"],
@@ -37,7 +37,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${syne.variable} ${fraunces.variable} ${notoDevanagari.variable}`}
+      className={`${display.variable} ${fraunces.variable} ${notoDevanagari.variable}`}
     >
       <body>
         <PrototypeBanner />

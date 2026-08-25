@@ -40,6 +40,7 @@ Covers:
 - Debit-with-no-ticket → same-day resume/retry at the same amount, **no double charge**
 - Same-day / IST calendar gate for resume
 - Catchability from a Mumbai pin, and Tatkal/ARP computed on the **originating station** clock
+- English / Hindi string-key parity (every on-screen copy has both languages)
 
 ## Stack
 
@@ -50,11 +51,21 @@ Covers:
 
 ## Live preview
 
-- App: https://temporary-rushing-zither-khnl5ii.vercel.app
+The durable source is the GitHub repository:
 
-**Captain click (permanent):** open [vercel.com/new](https://vercel.com/new), import `tayyab415/get-me-home`, deploy branch `cursor/get-me-home-citizen-journey-ccab`. No env vars are required.
+**https://github.com/tayyab415/get-me-home**
 
-Local: `npm install && npm test && npm run dev` → http://localhost:3000
+Run it locally:
+
+```bash
+npm install
+npm test
+npm run dev
+```
+
+Then open [http://localhost:3000](http://localhost:3000).
+
+Temporary cloud preview URLs are not the durable public URL for this prototype.
 
 ## Demo seed
 

@@ -3,7 +3,7 @@
 import type { RankedTrain } from "@/lib/search";
 import { STATION_BY_CODE } from "@/lib/rail-graph";
 import { formatIstClock } from "@/lib/catchability";
-import { fill, t, type Lang } from "@/lib/i18n";
+import { fill, formatTravel, localeFor, t, type Lang } from "@/lib/i18n";
 import { formatInrFromPaise } from "@/lib/payment-machine";
 
 export function TrainCard({
@@ -23,15 +23,17 @@ export function TrainCard({
   const boardName = lang === "hi" ? board.nameHi : board.nameEn;
   const trainName = lang === "hi" ? row.train.nameHi : row.train.nameEn;
   const avail = row.availability;
+  const loc = localeFor(lang);
   const quota =
     row.window.quota === "TATKAL"
       ? fill(t(lang, "quotaTatkal"), {
           origin: row.catch.originCode,
-          when: formatIstClock(row.window.opensAt),
+          when: formatIstClock(row.window.opensAt, loc),
         })
       : row.window.quota === "ARP"
-        ? fill(t(lang, "quotaArp"), { when: formatIstClock(row.window.opensAt) })
+        ? fill(t(lang, "quotaArp"), { when: formatIstClock(row.window.opensAt, loc) })
         : t(lang, "quotaClosed");
+  const boardHm = formatIstClock(row.catch.trainDepartsBoardingAt, loc);
 
   return (
     <article className={`train-card ${row.catch.catchable ? "catchable" : "missed"}`}>
@@ -39,15 +41,26 @@ export function TrainCard({
         <h3 className="train-name">{trainName}</h3>
         <span className="train-no">{row.train.number}</span>
       </header>
+      <div className="board-times">
+        <div className="board-time">
+          {row.train.originDepartHm}
+          <small>
+            {t(lang, "originAt")} {row.catch.originCode}
+          </small>
+        </div>
+        <div className="board-arrow" aria-hidden="true">
+          →
+        </div>
+        <div className="board-time" style={{ textAlign: "right" }}>
+          {boardHm}
+          <small>
+            {t(lang, "boardAt")} {row.catch.boardingCode}
+          </small>
+        </div>
+      </div>
       <div className="meta">
-        <span className="pill">
-          {t(lang, "originAt")} {row.catch.originCode} {row.train.originDepartHm}
-        </span>
-        <span className="pill">
-          {t(lang, "boardAt")} {row.catch.boardingCode} {formatIstClock(row.catch.trainDepartsBoardingAt)}
-        </span>
         <span className={`pill ${row.catch.catchable ? "good" : "bad"}`}>
-          {row.catch.travelLabel} {t(lang, "travelToBoard")}
+          {formatTravel(lang, row.catch.travelMin)} {t(lang, "travelToBoard")}
         </span>
         {avail && avail.kind !== "CLOSED" ? (
           <span className="pill">
@@ -56,7 +69,7 @@ export function TrainCard({
               : avail.kind === "WL"
                 ? `${t(lang, "wl")} ${avail.count}`
                 : `${t(lang, "rac")} ${avail.count}`}
-            · {formatInrFromPaise(row.farePaise)}
+            · {formatInrFromPaise(row.farePaise, loc)}
           </span>
         ) : (
           <span className="pill bad">{t(lang, "closedClass")}</span>
@@ -69,7 +82,11 @@ export function TrainCard({
             {fill(t(lang, "boardingNeOrigin"), {
               origin: `${originName} (${origin.code})`,
               board: `${boardName} (${board.code})`,
-              mins: `${row.train.stops.find((s) => s.stationCode === board.code)?.departOffsetMin ?? 0} min`,
+              mins: fill(t(lang, "boardingMins"), {
+                n: String(
+                  row.train.stops.find((s) => s.stationCode === board.code)?.departOffsetMin ?? 0,
+                ),
+              }),
             })}
           </p>
         </div>
@@ -83,8 +100,8 @@ export function TrainCard({
       {row.train.monsoonWatch ? <p className="clock-callout">{t(lang, "monsoon")}</p> : null}
       <p className="clock-callout">
         {row.catch.catchable
-          ? `${t(lang, "corridorOpen")} · ${t(lang, "leavesIn")} ${row.catch.slackMin} min`
-          : `${t(lang, "cantCatch")} · ${t(lang, "missedBy")} ${Math.abs(row.catch.slackMin)} min ${t(lang, "ago")}`}
+          ? `${t(lang, "corridorOpen")} · ${t(lang, "leavesIn")} ${fill(t(lang, "boardingMins"), { n: String(row.catch.slackMin) })}`
+          : `${t(lang, "cantCatch")} · ${t(lang, "missedBy")} ${fill(t(lang, "boardingMins"), { n: String(Math.abs(row.catch.slackMin)) })} ${t(lang, "ago")}`}
       </p>
       <button
         type="button"
