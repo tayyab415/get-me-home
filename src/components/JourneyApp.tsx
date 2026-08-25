@@ -62,17 +62,7 @@ function prefersReducedMotion() {
 }
 
 function defaultJourneyDate(now: Date): string {
-  const hour = Number(
-    new Intl.DateTimeFormat("en-GB", {
-      timeZone: "Asia/Kolkata",
-      hour: "2-digit",
-      hour12: false,
-    }).format(now),
-  );
-  const today = istCalendarDate(now);
-  if (hour < 12) return today;
-  const tmr = new Date(now.getTime() + 24 * 60 * 60 * 1000);
-  return istCalendarDate(tmr);
+  return istCalendarDate(now);
 }
 
 export function JourneyApp() {
