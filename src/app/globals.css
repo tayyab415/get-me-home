@@ -231,6 +231,11 @@ html[lang="hi"] .kicker {
     grid-template-columns: 1.18fr 0.82fr;
     min-height: calc(100dvh - var(--banner) - 56px);
   }
+
+  .sheet {
+    min-height: calc(100dvh - var(--banner) - 56px);
+    padding-bottom: 12px;
+  }
 }
 
 .map-wrap {
@@ -420,7 +425,7 @@ html[lang="hi"] .kicker {
 }
 
 .sheet {
-  padding: 14px 16px calc(var(--cta) + var(--safe-bottom) + 14px);
+  padding: 14px 16px calc(var(--cta) + var(--safe-bottom) + 18px);
   overflow: auto;
   display: flex;
   flex-direction: column;
