@@ -1,5 +1,5 @@
-import { JourneyShell } from "@/components/JourneyShell";
+import { JourneyApp } from "@/components/JourneyApp";
 
 export default function HomePage() {
-  return <JourneyShell />;
+  return <JourneyApp />;
 }

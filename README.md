@@ -4,7 +4,7 @@ Independent hackathon prototype of a citizen train journey for **Build What Move
 
 **Not affiliated with IRCTC or Indian Railways.** This app never calls live IRCTC / Indian Railways APIs. Every passenger, PNR, station clock, fare, and payment is **mock / fictional**. Do not treat it as an official booking channel.
 
-Persistent on-screen label: *Independent hackathon prototype · mock data only · not affiliated with IRCTC or Indian Railways.*
+Persistent on-screen label (English + Hindi): *Independent hackathon prototype · mock data only · not affiliated with IRCTC or Indian Railways.*
 
 ## Job to be done
 
@@ -22,11 +22,11 @@ Open [http://localhost:3000](http://localhost:3000).
 
 No mock login credentials are required. There is no Aadhaar, PAN, OTP, bank, or phone verification.
 
-Optional (later, never committed):
+Optional (local only, never commit real secrets) — see `.env.example`:
 
-- `NEXT_PUBLIC_GOOGLE_MAPS_KEY` — if present, the map can enhance. Without it, a crafted SVG India rail map is the demo. Judges should never see a broken Google logo.
+- `NEXT_PUBLIC_GOOGLE_MAPS_KEY` — if present, a faint Google embed can enhance the map. **Without it, a crafted SVG India rail map is the demo.** Judges should never see a broken Google logo.
 
-Do **not** put Google Maps keys, GEE keys, or any real credentials in `.env` files that get committed.
+Do **not** put Google Maps keys, GEE keys, or any real credentials in git.
 
 ## Tests
 
@@ -34,21 +34,30 @@ Do **not** put Google Maps keys, GEE keys, or any real credentials in `.env` fil
 npm test
 ```
 
-Covers the booking / payment state machine: pay success, and debit-with-no-ticket → same-day resume/retry at the same amount with no double charge.
+Covers:
+
+- Payment state machine: success (PNR issued)
+- Debit-with-no-ticket → same-day resume/retry at the same amount, **no double charge**
+- Same-day / IST calendar gate for resume
+- Catchability from a Mumbai pin, and Tatkal/ARP computed on the **originating station** clock
 
 ## Stack
 
-- Next.js (App Router) + TypeScript
-- Vitest for the payment state machine
-- Client-side mock rail graph (Mumbai–Delhi + Konkan)
+- Next.js 15 (App Router) + TypeScript
+- Vitest for payment + catchability
+- Client-side mock rail graph (Mumbai CSMT/BCT/LTT/DR · Delhi NDLS/NZM · Konkan PNVL/RN/MAO)
 - No live IRCTC
+
+## Demo seed
+
+Use **Play the citizen story** for a two-minute recording (minute one as citizen):
+
+pin (Bandra) → Delhi in plain language → trains → book Narmada Night Mail (board Dadar, originates CSMT) → debit-no-ticket → recover → PNR (mixed CNF + waitlist).
+
+Tatkal is a **clock and a rule** on the originating station, not a speed or concurrency boast.
 
 ## What this is not
 
 - Not an official IRCTC / Railways product
-- Not a Tatkal speed claim. Tatkal is a **clock and a rule** computed from the **originating station**, not a concurrency boast
+- Not a Tatkal-fast claim
 - Not production payments
-
-## Demo seed
-
-Use **Play the citizen story** (once the journey UI lands on this branch) for a two-minute recording: pin → trains → book → debit-no-ticket → recover → PNR.

@@ -1,4 +1,3 @@
-import type { Linter } from "eslint";
 import { dirname } from "path";
 import { fileURLToPath } from "url";
 import { FlatCompat } from "@eslint/eslintrc";
@@ -10,7 +9,7 @@ const compat = new FlatCompat({
   baseDirectory: __dirname,
 });
 
-const eslintConfig: Linter.Config[] = [
+const eslintConfig = [
   ...compat.extends("next/core-web-vitals", "next/typescript"),
 ];
 
