@@ -253,11 +253,13 @@ export function JourneyApp() {
         label: t(lang, "newSearch"),
         action: () => {
           payLockRef.current = false;
+          const clock = new Date();
           setStep("map");
           setPicked(null);
           setSession(null);
           setRows([]);
-          setNow(new Date());
+          setNow(clock);
+          setJourneyDate(defaultJourneyDate(clock));
         },
         disabled: false,
       };
