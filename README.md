@@ -48,6 +48,17 @@ Covers:
 - Client-side mock rail graph (Mumbai CSMT/BCT/LTT/DR · Delhi NDLS/NZM · Konkan PNVL/RN/MAO)
 - No live IRCTC
 
+## Live preview
+
+Anonymous Vercel deployment (claim it so it does not expire):
+
+- App: https://temporary-rushing-zither-khnl5ii.vercel.app
+- Claim / keep: https://vercel.com/claim-deployment?code=158d3c4e-4632-4ffd-9c1f-3845a55b0b3c
+
+**Captain click (permanent):** open [vercel.com/new](https://vercel.com/new), import `tayyab415/get-me-home`, deploy branch `cursor/get-me-home-citizen-journey-ccab`. No env vars are required.
+
+Local: `npm install && npm test && npm run dev` → http://localhost:3000
+
 ## Demo seed
 
 Use **Play the citizen story** for a two-minute recording (minute one as citizen):

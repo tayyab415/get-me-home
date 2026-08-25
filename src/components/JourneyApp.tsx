@@ -158,7 +158,7 @@ export function JourneyApp() {
     setCoach("3A");
     setJourneyDate("2026-08-25");
     setTravellers(seedTravellers());
-    await wait(500);
+    await wait(1400);
     const found = runSearch(
       DEMO_NOW,
       { lat: bandra.lat, lng: bandra.lng },
@@ -166,7 +166,7 @@ export function JourneyApp() {
       "2026-08-25",
       "3A",
     );
-    await wait(700);
+    await wait(2800);
     const night = found.find((r) => r.train.id === "night-mail") ?? found.find((r) => r.catch.catchable);
     if (!night) {
       setStory(false);
@@ -174,9 +174,9 @@ export function JourneyApp() {
     }
     setPicked(night);
     setStep("passengers");
-    await wait(550);
+    await wait(2000);
     setStep("review");
-    await wait(650);
+    await wait(2400);
     const idle = createIdleSession(
       night.farePaise * 3,
       "gmh-idem-citizen-story-001",
@@ -185,7 +185,7 @@ export function JourneyApp() {
     let pay = startPay(idle, DEMO_NOW);
     setSession(pay);
     setStep("paying");
-    await wait(700);
+    await wait(1400);
     pay = resolveGateway(
       pay,
       "debit_no_ticket",
@@ -194,10 +194,10 @@ export function JourneyApp() {
     );
     setSession(pay);
     setStep("recovery");
-    await wait(900);
+    await wait(3600);
     pay = startResume(pay, new Date("2026-08-25T09:22:00+05:30"));
     setSession(pay);
-    await wait(500);
+    await wait(1400);
     const issued = issueMockTicket(
       seedTravellers(),
       `${pay.idempotencyKey}-resume`,
