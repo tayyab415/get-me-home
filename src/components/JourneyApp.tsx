@@ -474,19 +474,29 @@ export function JourneyApp() {
               <span key={i} className={i <= activeMark ? "mark on" : "mark"} />
             ))}
           </div>
-          <button
-            type="button"
-            className="story-btn"
-            onClick={() => void playCitizenStory()}
-            disabled={story || step !== "map"}
-          >
-            {story ? t(lang, "playingStory") : t(lang, "playStory")}
-          </button>
-          <p className="hint">{t(lang, "storyCaption")}</p>
-          {reduceMotion ? <p className="hint">{t(lang, "skipMotion")}</p> : null}
+          {story ? <p className="hint">{t(lang, "playingStory")}</p> : null}
+          {step === "map" ? (
+            <>
+              <button
+                type="button"
+                className="story-btn"
+                onClick={() => void playCitizenStory()}
+                disabled={story}
+              >
+                {story ? t(lang, "playingStory") : t(lang, "playStory")}
+              </button>
+              <p className="hint">{t(lang, "storyCaption")}</p>
+              {reduceMotion ? <p className="hint">{t(lang, "skipMotion")}</p> : null}
+            </>
+          ) : null}
 
           {step === "map" ? (
             <>
+              {error === "emptyDest" ? (
+                <div className="empty-state" role="alert">
+                  <h3>{t(lang, "emptyDest")}</h3>
+                </div>
+              ) : null}
               <label className="field">
                 {t(lang, "movePin")}
                 <input
@@ -526,9 +536,6 @@ export function JourneyApp() {
                   </select>
                 </label>
               </div>
-              {error === "emptyDest" ? (
-                <div className="empty-state">{t(lang, "emptyDest")}</div>
-              ) : null}
               <p className="maps-note">{mapsKey ? t(lang, "mapsEnhanceOn") : t(lang, "mapsEnhance")}</p>
             </>
           ) : null}
