@@ -427,19 +427,6 @@ export function JourneyApp() {
                       disabled={story}
                     />
                   </label>
-                  <label className="field">
-                    {t(lang, "movePin")}
-                    <input
-                      value={placeText}
-                      placeholder={t(lang, "placePlaceholder")}
-                      onChange={(e) => setPlaceText(e.target.value)}
-                      onBlur={applyPlace}
-                      disabled={story}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter") applyPlace();
-                      }}
-                    />
-                  </label>
                   {destCodes.length ? (
                     <div className="station-chips" aria-live="polite">
                       {destCodes.map((c) => (
@@ -500,6 +487,19 @@ export function JourneyApp() {
 
           {step === "map" ? (
             <>
+              <label className="field">
+                {t(lang, "movePin")}
+                <input
+                  value={placeText}
+                  placeholder={t(lang, "placePlaceholder")}
+                  onChange={(e) => setPlaceText(e.target.value)}
+                  onBlur={applyPlace}
+                  disabled={story}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") applyPlace();
+                  }}
+                />
+              </label>
               <p className="hint">{t(lang, "destHint")}</p>
               <div className="row-2">
                 <label className="field">

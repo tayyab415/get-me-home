@@ -222,7 +222,7 @@ html[lang="hi"] .kicker {
 .stage {
   flex: 1;
   display: grid;
-  grid-template-rows: minmax(280px, 52vh) 1fr;
+  grid-template-rows: minmax(300px, 58vh) 1fr;
 }
 
 @media (min-width: 900px) {
@@ -422,23 +422,29 @@ html[lang="hi"] .kicker {
 .sheet {
   padding: 14px 16px calc(var(--cta) + var(--safe-bottom) + 14px);
   overflow: auto;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
   background:
     linear-gradient(180deg, rgba(244, 234, 213, 0.04), transparent 80px),
     var(--ink);
 }
 
 .story-btn {
-  width: 100%;
-  min-height: 48px;
-  border-radius: 14px;
-  border: 1px dashed var(--amber);
-  background: rgba(240, 162, 2, 0.08);
-  color: var(--amber-soft);
+  width: auto;
+  align-self: flex-start;
+  min-height: 44px;
+  padding: 0 14px;
+  border-radius: 999px;
+  border: 1px solid var(--mist-2);
+  background: transparent;
+  color: var(--paper-dark);
   font-family: var(--font-display), var(--font-ui), sans-serif;
-  font-weight: 700;
-  letter-spacing: 0.06em;
+  font-weight: 600;
+  letter-spacing: 0.08em;
   margin-bottom: 10px;
   text-transform: uppercase;
+  font-size: 0.78rem;
 }
 
 html[lang="hi"] .story-btn {
@@ -519,12 +525,25 @@ label.field select {
 }
 
 .cta-dock {
-  position: sticky;
+  position: fixed;
+  left: 0;
+  right: 0;
   bottom: 0;
-  margin: 0 -16px -16px;
+  margin: 0;
   padding: 10px 16px var(--safe-bottom);
   background: linear-gradient(180deg, transparent, var(--ink) 28%);
-  z-index: 20;
+  z-index: 30;
+}
+
+@media (min-width: 900px) {
+  .cta-dock {
+    position: sticky;
+    left: auto;
+    right: auto;
+    bottom: 0;
+    margin: auto -16px -16px;
+    margin-top: auto;
+  }
 }
 
 .cta {
