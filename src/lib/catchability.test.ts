@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { bookingWindow, evaluateCatch, tatkalOpensAt } from "./catchability";
-import { TRAINS } from "./rail-graph";
+import { TRAINS, resolveDestination } from "./rail-graph";
 import { searchTrains } from "./search";
 
 describe("originating-station clock and catchability", () => {
@@ -52,5 +52,19 @@ describe("originating-station clock and catchability", () => {
     });
     expect(rows.some((r) => r.train.id === "konkan-rain")).toBe(true);
     expect(rows.every((r) => r.train.destinationCode === "RN")).toBe(false);
+  });
+});
+
+describe("destination aliases", () => {
+  it("sends konkan to Ratnagiri, not Goa's konkan-home phrase", () => {
+    expect(resolveDestination("konkan")?.stationCodes).toEqual(["RN"]);
+    expect(resolveDestination("ratnagiri")?.stationCodes).toEqual(["RN"]);
+    expect(resolveDestination("RN")?.stationCodes).toEqual(["RN"]);
+  });
+
+  it("does not let short words steal a destination", () => {
+    expect(resolveDestination("home")).toBeUndefined();
+    expect(resolveDestination("in")).toBeUndefined();
+    expect(resolveDestination("home in Delhi")?.stationCodes).toEqual(["NDLS", "NZM"]);
   });
 });

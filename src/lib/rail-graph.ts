@@ -401,6 +401,6 @@ export function resolveDestination(text: string) {
     };
   }
   return DESTINATION_ALIASES.find((d) =>
-    d.query.some((n) => q.includes(n) || n.includes(q)),
+    d.query.some((n) => q.includes(n)),
   );
 }

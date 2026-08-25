@@ -69,9 +69,7 @@ export function TrainCard({
             {fill(t(lang, "boardingNeOrigin"), {
               origin: `${originName} (${origin.code})`,
               board: `${boardName} (${board.code})`,
-              mins: row.catch.travelLabel.includes("min")
-                ? `${row.train.stops.find((s) => s.stationCode === board.code)?.departOffsetMin ?? 0} min`
-                : `${row.train.stops.find((s) => s.stationCode === board.code)?.departOffsetMin ?? 0} min`,
+              mins: `${row.train.stops.find((s) => s.stationCode === board.code)?.departOffsetMin ?? 0} min`,
             })}
           </p>
         </div>

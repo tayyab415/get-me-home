@@ -94,6 +94,7 @@ export function JourneyApp() {
   const [session, setSession] = useState<PaymentSession | null>(null);
   const [story, setStory] = useState(false);
   const cancelRef = useRef({ cancelled: false });
+  const payLockRef = useRef(false);
   const mapsKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_KEY;
   const monsoon = destCodes.includes("MAO") || destCodes.includes("RN") || Boolean(picked?.train.monsoonWatch);
 
@@ -251,6 +252,7 @@ export function JourneyApp() {
       return {
         label: t(lang, "newSearch"),
         action: () => {
+          payLockRef.current = false;
           setStep("map");
           setPicked(null);
           setSession(null);
@@ -265,6 +267,7 @@ export function JourneyApp() {
 
   function beginPay(outcome: "success" | "debit_no_ticket") {
     if (!picked) return;
+    if (payLockRef.current) return;
     if (
       session?.status === "debit_no_ticket" ||
       session?.status === "resuming" ||
@@ -273,6 +276,7 @@ export function JourneyApp() {
     ) {
       return;
     }
+    payLockRef.current = true;
     const clock = now;
     const idle = createIdleSession(
       farePaise,
@@ -287,15 +291,18 @@ export function JourneyApp() {
       pay = resolveGateway(pay, outcome, ticket, clock);
       setSession(pay);
       setStep(outcome === "success" ? "ticket" : "recovery");
+      payLockRef.current = false;
     }, prefersReducedMotion() ? 0 : 640);
   }
 
   function doResume(outcome: "success" | "still_failed") {
     if (!session) return;
+    if (payLockRef.current) return;
     if (step === "paying" || session.status === "resuming") return;
     const clock = now;
     const gate = canResume(session, clock);
     if (!gate.ok) return;
+    payLockRef.current = true;
     setStep("paying");
     try {
       let pay = startResume(session, clock);
@@ -308,8 +315,10 @@ export function JourneyApp() {
         pay = resolveResume(pay, outcome, ticket, clock);
         setSession(pay);
         setStep(pay.status === "success" ? "ticket" : "failed");
+        payLockRef.current = false;
       }, prefersReducedMotion() ? 0 : 500);
     } catch {
+      payLockRef.current = false;
       setStep("recovery");
     }
   }
