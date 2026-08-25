@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { bookingWindow, evaluateCatch, tatkalOpensAt } from "./catchability";
-import { TRAINS, resolveDestination } from "./rail-graph";
+import { TRAINS, resolveDestination, resolvePlace } from "./rail-graph";
 import { searchTrains } from "./search";
 
 describe("originating-station clock and catchability", () => {
@@ -66,5 +66,19 @@ describe("destination aliases", () => {
     expect(resolveDestination("home")).toBeUndefined();
     expect(resolveDestination("in")).toBeUndefined();
     expect(resolveDestination("home in Delhi")?.stationCodes).toEqual(["NDLS", "NZM"]);
+  });
+
+  it("resolves Hindi destination phrases from the placeholder", () => {
+    expect(resolveDestination("दिल्ली")?.stationCodes).toEqual(["NDLS", "NZM"]);
+    expect(resolveDestination("गोवा का घर")?.stationCodes).toEqual(["MAO"]);
+    expect(resolveDestination("रत्नागिरी")?.stationCodes).toEqual(["RN"]);
+    expect(resolveDestination("कोंकण")?.stationCodes).toEqual(["RN"]);
+  });
+});
+
+describe("place matching", () => {
+  it("does not snap the pin on one- or two-letter fragments", () => {
+    expect(resolvePlace("in")).toBeUndefined();
+    expect(resolvePlace("a")).toBeUndefined();
   });
 });

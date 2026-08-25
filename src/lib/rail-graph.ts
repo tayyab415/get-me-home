@@ -237,19 +237,41 @@ export const DESTINATION_ALIASES: {
   stationCodes: string[];
 }[] = [
   {
-    query: ["delhi", "new delhi", "ndls", "dilli", "home in delhi", "ncr", "nizamuddin", "nzm"],
+    query: [
+      "delhi",
+      "new delhi",
+      "ndls",
+      "dilli",
+      "home in delhi",
+      "ncr",
+      "nizamuddin",
+      "nzm",
+      "दिल्ली",
+      "नई दिल्ली",
+      "निजामुद्दीन",
+    ],
     labelEn: "Delhi — New Delhi & Nizamuddin",
     labelHi: "दिल्ली — नई दिल्ली और निजामुद्दीन",
     stationCodes: ["NDLS", "NZM"],
   },
   {
-    query: ["goa", "madgaon", "mao", "panaji", "konkan home", "home in goa"],
+    query: [
+      "goa",
+      "madgaon",
+      "mao",
+      "panaji",
+      "konkan home",
+      "home in goa",
+      "गोवा",
+      "मडगाँव",
+      "गोवा का घर",
+    ],
     labelEn: "Goa — Madgaon",
     labelHi: "गोवा — मडगाँव",
     stationCodes: ["MAO"],
   },
   {
-    query: ["ratnagiri", "rn", "konkan"],
+    query: ["ratnagiri", "rn", "konkan", "रत्नागिरी", "कोंकण"],
     labelEn: "Ratnagiri (Konkan)",
     labelHi: "रत्नागिरी (कोंकण)",
     stationCodes: ["RN"],
@@ -386,7 +408,9 @@ export function stationLatLng(code: string): LatLng {
 export function resolvePlace(text: string): PlaceHint | undefined {
   const q = text.trim().toLowerCase();
   if (!q) return undefined;
-  return PLACES.find((p) => p.query.some((n) => q.includes(n) || n.includes(q)));
+  return PLACES.find((p) =>
+    p.query.some((n) => q.includes(n) || (q.length >= 3 && n.includes(q))),
+  );
 }
 
 export function resolveDestination(text: string) {

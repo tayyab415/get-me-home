@@ -83,9 +83,9 @@ export function JourneyApp() {
   const [destText, setDestText] = useState("");
   const [destCodes, setDestCodes] = useState<string[]>([]);
   const [destLabel, setDestLabel] = useState("");
-  const [journeyDate, setJourneyDate] = useState(() => defaultJourneyDate(new Date()));
+  const [journeyDate, setJourneyDate] = useState("");
   const [coach, setCoach] = useState<CoachClass>("3A");
-  const [now, setNow] = useState(() => new Date());
+  const [now, setNow] = useState(() => new Date(0));
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [rows, setRows] = useState<RankedTrain[]>([]);
@@ -103,6 +103,12 @@ export function JourneyApp() {
   useEffect(() => {
     document.documentElement.lang = lang === "hi" ? "hi" : "en";
   }, [lang]);
+
+  useEffect(() => {
+    const clock = new Date();
+    setNow(clock);
+    setJourneyDate(defaultJourneyDate(clock));
+  }, []);
 
   useEffect(() => {
     if (!destResolved) {
@@ -378,7 +384,7 @@ export function JourneyApp() {
             type="button"
             className="story-btn"
             onClick={() => void playCitizenStory()}
-            disabled={story}
+            disabled={story || step !== "map"}
           >
             {story ? t(lang, "playingStory") : t(lang, "playStory")}
           </button>
