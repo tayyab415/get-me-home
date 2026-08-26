@@ -363,9 +363,9 @@ export function totalDebitedPaise(session: PaymentSession): number {
     .reduce((sum, e) => sum + e.amountPaise, 0);
 }
 
-export function formatInrFromPaise(paise: number): string {
+export function formatInrFromPaise(paise: number, locale = "en-IN"): string {
   const rupees = paise / 100;
-  return new Intl.NumberFormat("en-IN", {
+  return new Intl.NumberFormat(locale, {
     style: "currency",
     currency: "INR",
     maximumFractionDigits: 0,

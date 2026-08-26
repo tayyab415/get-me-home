@@ -5,43 +5,70 @@ import { project, unproject, type LatLng } from "@/lib/geo";
 import { RAIL_CORRIDORS, STATIONS, stationLatLng } from "@/lib/rail-graph";
 
 const INDIA_RING: LatLng[] = [
-  { lat: 35.4, lng: 77.5 },
-  { lat: 34.2, lng: 74.8 },
-  { lat: 32.6, lng: 74.6 },
-  { lat: 29.9, lng: 73.2 },
-  { lat: 28.0, lng: 70.4 },
-  { lat: 24.7, lng: 68.2 },
-  { lat: 22.8, lng: 69.1 },
-  { lat: 21.2, lng: 72.0 },
+  { lat: 35.5, lng: 77.6 },
+  { lat: 34.5, lng: 76.1 },
+  { lat: 34.1, lng: 74.8 },
+  { lat: 32.5, lng: 74.7 },
+  { lat: 30.5, lng: 73.9 },
+  { lat: 28.6, lng: 70.8 },
+  { lat: 26.8, lng: 69.6 },
+  { lat: 24.7, lng: 68.1 },
+  { lat: 23.6, lng: 68.4 },
+  { lat: 22.4, lng: 69.0 },
+  { lat: 22.2, lng: 70.0 },
+  { lat: 21.4, lng: 72.0 },
+  { lat: 20.2, lng: 72.7 },
   { lat: 19.08, lng: 72.82 },
-  { lat: 16.9, lng: 73.2 },
-  { lat: 15.3, lng: 73.8 },
+  { lat: 17.9, lng: 73.05 },
+  { lat: 16.0, lng: 73.4 },
+  { lat: 14.8, lng: 74.1 },
   { lat: 12.9, lng: 74.8 },
+  { lat: 11.3, lng: 75.8 },
+  { lat: 9.9, lng: 76.2 },
   { lat: 8.1, lng: 77.5 },
-  { lat: 10.0, lng: 79.2 },
+  { lat: 8.2, lng: 77.9 },
+  { lat: 10.2, lng: 79.3 },
+  { lat: 11.7, lng: 79.8 },
   { lat: 13.1, lng: 80.3 },
+  { lat: 15.3, lng: 80.1 },
   { lat: 16.5, lng: 82.3 },
+  { lat: 17.7, lng: 83.3 },
   { lat: 19.8, lng: 85.8 },
-  { lat: 21.5, lng: 87.0 },
+  { lat: 20.3, lng: 86.7 },
+  { lat: 21.6, lng: 87.5 },
   { lat: 22.4, lng: 88.4 },
+  { lat: 24.8, lng: 88.2 },
   { lat: 26.2, lng: 89.7 },
-  { lat: 27.6, lng: 88.1 },
+  { lat: 27.2, lng: 88.9 },
   { lat: 27.4, lng: 84.0 },
   { lat: 28.8, lng: 80.1 },
   { lat: 30.4, lng: 78.1 },
   { lat: 32.9, lng: 79.0 },
-  { lat: 35.4, lng: 77.5 },
+  { lat: 34.4, lng: 78.4 },
+  { lat: 35.5, lng: 77.6 },
 ];
 
 const NE_RING: LatLng[] = [
   { lat: 27.6, lng: 89.8 },
-  { lat: 27.9, lng: 95.2 },
+  { lat: 28.0, lng: 94.2 },
+  { lat: 27.6, lng: 96.0 },
   { lat: 26.1, lng: 95.4 },
   { lat: 24.3, lng: 93.6 },
   { lat: 23.0, lng: 91.8 },
+  { lat: 22.8, lng: 91.0 },
   { lat: 24.8, lng: 88.9 },
   { lat: 26.4, lng: 89.0 },
   { lat: 27.6, lng: 89.8 },
+];
+
+const SRI_RING: LatLng[] = [
+  { lat: 9.8, lng: 79.9 },
+  { lat: 8.5, lng: 79.8 },
+  { lat: 6.1, lng: 80.2 },
+  { lat: 6.0, lng: 81.5 },
+  { lat: 7.5, lng: 81.9 },
+  { lat: 9.3, lng: 80.9 },
+  { lat: 9.8, lng: 80.2 },
 ];
 
 const KONKAN_WATER: LatLng[] = [
@@ -72,12 +99,22 @@ function corridorPath(codes: string[]): string {
     .join(" ");
 }
 
+export interface RailMapLabels {
+  aria: string;
+  arabian: string;
+  bengal: string;
+  himalaya: string;
+  mock: string;
+  north: string;
+}
+
 interface RailMapProps {
   pin: LatLng;
   onPin: (next: LatLng) => void;
   destCodes: string[];
   highlightBoarding?: string;
   monsoon: boolean;
+  labels: RailMapLabels;
 }
 
 export function RailMap({
@@ -86,6 +123,7 @@ export function RailMap({
   destCodes,
   highlightBoarding,
   monsoon,
+  labels,
 }: RailMapProps) {
   const svgRef = useRef<SVGSVGElement>(null);
   const [dragging, setDragging] = useState(false);
@@ -93,7 +131,15 @@ export function RailMap({
   const pinPt = project(pin);
   const mainland = useMemo(() => toPath(INDIA_RING), []);
   const northeast = useMemo(() => toPath(NE_RING), []);
+  const sri = useMemo(() => toPath(SRI_RING), []);
   const water = useMemo(() => toPath(KONKAN_WATER), []);
+  const mumbai = project({ lat: 19.076, lng: 72.8777 });
+  const delhi = project({ lat: 28.6139, lng: 77.209 });
+  const denseType = /[\u0900-\u097F]/.test(labels.arabian);
+  const geoFont = denseType
+    ? "var(--font-ui), sans-serif"
+    : "var(--font-display), var(--font-ui), sans-serif";
+  const geoTrack = denseType ? "0.02em" : "0.16em";
 
   function clientToLatLng(clientX: number, clientY: number): LatLng | null {
     const svg = svgRef.current;
@@ -120,7 +166,7 @@ export function RailMap({
       className="rail-map"
       viewBox="0 0 390 520"
       role="img"
-      aria-label="Crafted map of India rail corridors. Drag the pin to set where you are."
+      aria-label={labels.aria}
       onPointerDown={(e) => {
         (e.target as Element).setPointerCapture?.(e.pointerId);
         setDragging(true);
@@ -134,45 +180,65 @@ export function RailMap({
     >
       <defs>
         <linearGradient id={`${clipId}-night`} x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stopColor="#101820" />
-          <stop offset="100%" stopColor="#07090e" />
+          <stop offset="0%" stopColor="#0b1524" />
+          <stop offset="55%" stopColor="#070b12" />
+          <stop offset="100%" stopColor="#05070b" />
         </linearGradient>
         <linearGradient id={`${clipId}-land`} x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#1c2738" />
-          <stop offset="100%" stopColor="#121820" />
+          <stop offset="0%" stopColor="#243044" />
+          <stop offset="42%" stopColor="#1a2433" />
+          <stop offset="100%" stopColor="#101820" />
         </linearGradient>
+        <radialGradient id={`${clipId}-city`} cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stopColor="#f0a202" stopOpacity="0.55" />
+          <stop offset="100%" stopColor="#f0a202" stopOpacity="0" />
+        </radialGradient>
+        <radialGradient id={`${clipId}-moon`} cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stopColor="#f4ead5" stopOpacity="0.55" />
+          <stop offset="100%" stopColor="#f4ead5" stopOpacity="0" />
+        </radialGradient>
         <filter id={`${clipId}-glow`} x="-40%" y="-40%" width="180%" height="180%">
-          <feGaussianBlur stdDeviation="2.2" result="b" />
+          <feGaussianBlur stdDeviation="2.4" result="b" />
           <feMerge>
             <feMergeNode in="b" />
             <feMergeNode in="SourceGraphic" />
           </feMerge>
         </filter>
         <pattern id={`${clipId}-hatch`} width="8" height="8" patternUnits="userSpaceOnUse">
-          <path d="M0 8 L8 0" stroke="#3d9b6e" strokeWidth="1.2" opacity="0.55" />
+          <path d="M0 8 L8 0" stroke="#2f9e6b" strokeWidth="1.2" opacity="0.6" />
+        </pattern>
+        <pattern id={`${clipId}-grid`} width="39" height="40" patternUnits="userSpaceOnUse">
+          <path d="M39 0 L0 0 0 40" fill="none" stroke="#f4ead5" strokeOpacity="0.05" strokeWidth="0.6" />
         </pattern>
       </defs>
       <rect width="390" height="520" fill={`url(#${clipId}-night)`} />
-      <g className="stars" opacity="0.55">
-        {Array.from({ length: 28 }, (_, i) => (
+      <rect width="390" height="520" fill={`url(#${clipId}-grid)`} />
+      <circle cx="318" cy="48" r="70" fill={`url(#${clipId}-moon)`} />
+      <circle cx="312" cy="44" r="9" fill="#f4ead5" opacity="0.85" />
+      <g className="stars" opacity="0.7">
+        {Array.from({ length: 42 }, (_, i) => (
           <circle
             key={i}
-            cx={((i * 47) % 390) + 6}
-            cy={((i * 73) % 200) + 8}
-            r={i % 5 === 0 ? 1.3 : 0.6}
-            fill="#f3ead6"
+            cx={((i * 53) % 390) + 4}
+            cy={((i * 67) % 240) + 6}
+            r={i % 7 === 0 ? 1.4 : 0.55}
+            fill="#f4ead5"
+            opacity={i % 4 === 0 ? 0.95 : 0.45}
           />
         ))}
       </g>
-      <path d={mainland} fill={`url(#${clipId}-land)`} stroke="#3a4a63" strokeWidth="1.4" />
-      <path d={northeast} fill={`url(#${clipId}-land)`} stroke="#3a4a63" strokeWidth="1.2" />
+      <circle cx={mumbai.x} cy={mumbai.y} r="46" fill={`url(#${clipId}-city)`} />
+      <circle cx={delhi.x} cy={delhi.y} r="38" fill={`url(#${clipId}-city)`} />
+      <path d={sri} fill="#121820" stroke="#2a384c" strokeWidth="0.8" opacity="0.55" />
+      <path d={mainland} fill={`url(#${clipId}-land)`} stroke="#8aa0c0" strokeWidth="1.35" />
+      <path d={northeast} fill={`url(#${clipId}-land)`} stroke="#8aa0c0" strokeWidth="1.15" />
       {monsoon ? (
         <path
           d={water}
           fill={`url(#${clipId}-hatch)`}
-          stroke="#3d9b6e"
+          stroke="#2f9e6b"
           strokeWidth="1"
-          opacity="0.85"
+          opacity="0.9"
           className="monsoon-wash"
         />
       ) : null}
@@ -181,13 +247,13 @@ export function RailMap({
           key={c.id}
           d={corridorPath(c.stations)}
           fill="none"
-          stroke={c.monsoon ? "#3d9b6e" : "#e8a317"}
-          strokeWidth={c.monsoon ? 2.4 : 2.8}
+          stroke={c.monsoon ? "#2f9e6b" : "#f0a202"}
+          strokeWidth={c.monsoon ? 2.6 : 3.1}
           strokeLinecap="round"
           strokeLinejoin="round"
           className="corridor-line"
           filter={`url(#${clipId}-glow)`}
-          opacity={c.monsoon && !monsoon ? 0.25 : 1}
+          opacity={c.monsoon && !monsoon ? 0.22 : 1}
         />
       ))}
       {STATIONS.map((s) => {
@@ -196,34 +262,111 @@ export function RailMap({
         const board = highlightBoarding === s.code;
         return (
           <g key={s.code} transform={`translate(${p.x} ${p.y})`}>
+            {dest || board ? (
+              <circle
+                r={board ? 14 : 11}
+                fill={board ? "#f4ead5" : "#2f9e6b"}
+                opacity="0.22"
+                className="station-halo"
+              />
+            ) : null}
             <circle
-              r={board ? 7 : dest ? 5.5 : 3.2}
-              fill={board ? "#f3ead6" : dest ? "#3d9b6e" : "#e8a317"}
-              stroke="#07090e"
+              r={board ? 7 : dest ? 5.6 : 3.1}
+              fill={board ? "#f4ead5" : dest ? "#2f9e6b" : "#f0a202"}
+              stroke="#05070b"
               strokeWidth="1.2"
             />
             <text
-              y="-10"
+              y="-11"
               textAnchor="middle"
-              fill="#f3ead6"
-              fontSize="8"
+              fill="#f4ead5"
+              fontSize="8.5"
               fontFamily="var(--font-display), sans-serif"
-              letterSpacing="0.08em"
+              letterSpacing="0.1em"
+              fontWeight="700"
             >
               {s.code}
             </text>
           </g>
         );
       })}
-      <g className={dragging ? "pin dragging" : "pin drop"} transform={`translate(${pinPt.x} ${pinPt.y})`}>
-        <ellipse rx="14" ry="5" cy="4" fill="#07090e" opacity="0.45" />
-        <path
-          d="M0 -28 C 10 -28 14 -18 14 -12 C 14 -4 0 8 0 8 C 0 8 -14 -4 -14 -12 C -14 -18 -10 -28 0 -28 Z"
-          fill="#e8a317"
-          stroke="#f3ead6"
-          strokeWidth="1.2"
-        />
-        <circle cy="-16" r="4.2" fill="#07090e" />
+      <text
+        x="42"
+        y="268"
+        fill="#8aa0c0"
+        fontSize={denseType ? 9 : 8}
+        letterSpacing={geoTrack}
+        fontFamily={geoFont}
+        opacity="0.8"
+      >
+        {labels.arabian}
+      </text>
+      <text
+        x="258"
+        y="250"
+        fill="#8aa0c0"
+        fontSize={denseType ? 9 : 8}
+        letterSpacing={geoTrack}
+        fontFamily={geoFont}
+        opacity="0.8"
+      >
+        {labels.bengal}
+      </text>
+      <text
+        x="168"
+        y="58"
+        fill="#cbb99a"
+        fontSize={denseType ? 9 : 8}
+        letterSpacing={geoTrack}
+        fontFamily={geoFont}
+        opacity="0.85"
+      >
+        {labels.himalaya}
+      </text>
+      <text
+        x="14"
+        y="506"
+        fill="#f0a202"
+        fontSize={denseType ? 10 : 9}
+        letterSpacing={geoTrack}
+        fontFamily={geoFont}
+        opacity="0.9"
+      >
+        {labels.mock}
+      </text>
+      <g transform="translate(356 488)" fill="#f4ead5" opacity="0.8">
+        <circle r="11" fill="none" stroke="#f4ead5" strokeWidth="1" />
+        <path d="M0 -7 L2.2 2 L0 0 L-2.2 2 Z" fill="#f0a202" />
+        <text
+          y="20"
+          textAnchor="middle"
+          fontSize={denseType ? 9 : 7}
+          letterSpacing={denseType ? "0.02em" : "0.12em"}
+          fontFamily={geoFont}
+        >
+          {labels.north}
+        </text>
+      </g>
+      <g transform={`translate(${pinPt.x} ${pinPt.y})`}>
+        {!dragging ? (
+          <circle
+            className="pin-ripple"
+            r="16"
+            fill="none"
+            stroke="#f0a202"
+            strokeWidth="1.4"
+          />
+        ) : null}
+        <g className={dragging ? "pin dragging" : "pin drop"}>
+          <ellipse rx="14" ry="5" cy="4" fill="#05070b" opacity="0.5" />
+          <path
+            d="M0 -28 C 10 -28 14 -18 14 -12 C 14 -4 0 8 0 8 C 0 8 -14 -4 -14 -12 C -14 -18 -10 -28 0 -28 Z"
+            fill="#f0a202"
+            stroke="#f4ead5"
+            strokeWidth="1.2"
+          />
+          <circle cy="-16" r="4.2" fill="#05070b" />
+        </g>
       </g>
     </svg>
   );

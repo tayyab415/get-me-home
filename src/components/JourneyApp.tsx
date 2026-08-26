@@ -24,10 +24,11 @@ import {
   startPay,
   startResume,
   totalDebitedPaise,
+  type LedgerEntry,
   type PaymentSession,
 } from "@/lib/payment-machine";
 import { nextTraveller, searchTrains, seedTravellers, type RankedTrain, type Traveller } from "@/lib/search";
-import { fill, t, type Lang } from "@/lib/i18n";
+import { fill, localeFor, t, LEDGER_NOTE_KEYS, type Lang } from "@/lib/i18n";
 import { formatIstLong } from "@/lib/catchability";
 import { issueMockTicket } from "@/lib/ticket";
 
@@ -65,6 +66,22 @@ function defaultJourneyDate(now: Date): string {
   return istCalendarDate(now);
 }
 
+function markIndex(step: Step): number {
+  if (step === "map") return 0;
+  if (step === "results") return 1;
+  if (step === "passengers") return 2;
+  if (step === "review" || step === "paying") return 3;
+  if (step === "recovery" || step === "failed") return 4;
+  return 5;
+}
+
+function ledgerLabel(lang: Lang, entry: LedgerEntry): string {
+  const kind = entry.kind === "debit" ? t(lang, "ledgerKindDebit") : t(lang, "ledgerKindResume");
+  const key = LEDGER_NOTE_KEYS[entry.note];
+  const note = key ? t(lang, key) : entry.note;
+  return `${kind} · ${formatInrFromPaise(entry.amountPaise, localeFor(lang))} · ${note}`;
+}
+
 export function JourneyApp() {
   const [lang, setLang] = useState<Lang>("en");
   const [step, setStep] = useState<Step>("map");
@@ -89,6 +106,7 @@ export function JourneyApp() {
   const storyLockRef = useRef(false);
   const mapsKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_KEY;
   const monsoon = destCodes.includes("MAO") || destCodes.includes("RN") || Boolean(picked?.train.monsoonWatch);
+  const loc = localeFor(lang);
 
   const destResolved = useMemo(() => resolveDestination(destText), [destText]);
 
@@ -234,7 +252,7 @@ export function JourneyApp() {
       return {
         label: t(lang, "findTrains"),
         action: () => runSearch(),
-        disabled: !destCodes.length || story || !now,
+        disabled: story || !now,
       };
     }
     if (step === "passengers") {
@@ -246,13 +264,20 @@ export function JourneyApp() {
     }
     if (step === "review" && picked) {
       return {
-        label: `${t(lang, "paySuccess")} · ${formatInrFromPaise(farePaise)}`,
+        label: `${t(lang, "paySuccess")} · ${formatInrFromPaise(farePaise, loc)}`,
         action: () => beginPay("success"),
         disabled: story,
         extra: {
-          label: `${t(lang, "payDebit")} · ${formatInrFromPaise(farePaise)}`,
+          label: `${t(lang, "payDebit")} · ${formatInrFromPaise(farePaise, loc)}`,
           action: () => beginPay("debit_no_ticket"),
         },
+      };
+    }
+    if (step === "paying") {
+      return {
+        label: t(lang, "paying"),
+        action: () => undefined,
+        disabled: true,
       };
     }
     if (step === "recovery" && session) {
@@ -341,6 +366,7 @@ export function JourneyApp() {
   }
 
   const highlight = picked?.catch.boardingCode;
+  const activeMark = markIndex(step);
 
   return (
     <div className="app">
@@ -353,6 +379,7 @@ export function JourneyApp() {
           <button
             type="button"
             aria-pressed={lang === "en"}
+            aria-label={t(lang, "langEn")}
             onClick={() => setLang("en")}
           >
             EN
@@ -361,6 +388,7 @@ export function JourneyApp() {
             type="button"
             aria-pressed={lang === "hi"}
             lang="hi"
+            aria-label={t(lang, "langHi")}
             onClick={() => setLang("hi")}
           >
             हिं
@@ -368,7 +396,7 @@ export function JourneyApp() {
         </div>
       </header>
 
-      <div className="stage">
+      <div className={step === "map" ? "stage" : "stage is-flow"}>
         <div className="map-wrap">
           <OptionalGoogleMap pin={pin} />
           <RailMap
@@ -377,28 +405,95 @@ export function JourneyApp() {
             destCodes={destCodes}
             highlightBoarding={highlight}
             monsoon={monsoon || destText.toLowerCase().includes("goa")}
+            labels={{
+              aria: t(lang, "mapAria"),
+              arabian: t(lang, "seaArabian"),
+              bengal: t(lang, "seaBengal"),
+              himalaya: t(lang, "himalaya"),
+              mock: t(lang, "mockRail"),
+              north: t(lang, "north"),
+            }}
           />
+          <div className="map-hud">
+            <div className="hud-card">
+              {step === "map" ? (
+                <>
+                  <label className="field">
+                    {t(lang, "destination")}
+                    <input
+                      value={destText}
+                      placeholder={t(lang, "destPlaceholder")}
+                      onChange={(e) => setDestText(e.target.value)}
+                      disabled={story}
+                    />
+                  </label>
+                  {destCodes.length ? (
+                    <div className="station-chips" aria-live="polite">
+                      {destCodes.map((c) => (
+                        <span key={c}>
+                          {c} · {lang === "hi" ? STATION_BY_CODE[c].nameHi : STATION_BY_CODE[c].nameEn}
+                        </span>
+                      ))}
+                    </div>
+                  ) : null}
+                  {destLabel ? <p className="hint" style={{ marginBottom: 0 }}>{destLabel}</p> : null}
+                </>
+              ) : (
+                <>
+                  <p className="kicker" style={{ marginBottom: 4 }}>
+                    {t(lang, "fromStamp")}
+                  </p>
+                  <p className="train-name" style={{ fontSize: "1.15rem" }}>
+                    {placeText || `${pin.lat.toFixed(2)}° ${pin.lng.toFixed(2)}°`}
+                    {destLabel ? ` → ${destLabel}` : destText ? ` → ${destText}` : ""}
+                  </p>
+                  {destCodes.length ? (
+                    <div className="station-chips" style={{ marginTop: 8, marginBottom: 0 }}>
+                      {destCodes.map((c) => (
+                        <span key={c}>{c}</span>
+                      ))}
+                    </div>
+                  ) : null}
+                </>
+              )}
+            </div>
+          </div>
           <div className="map-caption">
             <span className="chip">
               {t(lang, "whereYouAre")} · {pin.lat.toFixed(3)}, {pin.lng.toFixed(3)}
             </span>
             <span className="chip">
-              {t(lang, "clockMock")}: {now ? formatIstLong(now) : "—"}
+              {t(lang, "clockMock")}: {now ? formatIstLong(now, loc) : "—"}
             </span>
           </div>
         </div>
 
         <section className="sheet" lang={lang === "hi" ? "hi" : "en"}>
-          <button
-            type="button"
-            className="story-btn"
-            onClick={() => void playCitizenStory()}
-            disabled={story || step !== "map"}
-          >
-            {story ? t(lang, "playingStory") : t(lang, "playStory")}
-          </button>
-          <p className="hint">{t(lang, "storyCaption")}</p>
-          {reduceMotion ? <p className="hint">{t(lang, "skipMotion")}</p> : null}
+          <div className="marks" aria-hidden="true">
+            {Array.from({ length: 6 }, (_, i) => (
+              <span key={i} className={i <= activeMark ? "mark on" : "mark"} />
+            ))}
+          </div>
+          {story ? <p className="hint">{t(lang, "playingStory")}</p> : null}
+          {step === "map" && error === "emptyDest" ? (
+            <div className="empty-state" role="alert">
+              <h3>{t(lang, "emptyDest")}</h3>
+            </div>
+          ) : null}
+          {step === "map" ? (
+            <>
+              <button
+                type="button"
+                className="story-btn"
+                onClick={() => void playCitizenStory()}
+                disabled={story}
+              >
+                {story ? t(lang, "playingStory") : t(lang, "playStory")}
+              </button>
+              <p className="hint">{t(lang, "storyCaption")}</p>
+              {reduceMotion ? <p className="hint">{t(lang, "skipMotion")}</p> : null}
+            </>
+          ) : null}
 
           {step === "map" ? (
             <>
@@ -409,30 +504,13 @@ export function JourneyApp() {
                   placeholder={t(lang, "placePlaceholder")}
                   onChange={(e) => setPlaceText(e.target.value)}
                   onBlur={applyPlace}
+                  disabled={story}
                   onKeyDown={(e) => {
                     if (e.key === "Enter") applyPlace();
                   }}
                 />
               </label>
-              <label className="field">
-                {t(lang, "destination")}
-                <input
-                  value={destText}
-                  placeholder={t(lang, "destPlaceholder")}
-                  onChange={(e) => setDestText(e.target.value)}
-                />
-              </label>
               <p className="hint">{t(lang, "destHint")}</p>
-              {destCodes.length ? (
-                <div className="station-chips" aria-live="polite">
-                  {destCodes.map((c) => (
-                    <span key={c}>
-                      {c} · {lang === "hi" ? STATION_BY_CODE[c].nameHi : STATION_BY_CODE[c].nameEn}
-                    </span>
-                  ))}
-                </div>
-              ) : null}
-              {destLabel ? <p className="hint">{destLabel}</p> : null}
               <div className="row-2">
                 <label className="field">
                   {t(lang, "journeyDate")}
@@ -440,6 +518,7 @@ export function JourneyApp() {
                     type="date"
                     value={journeyDate}
                     onChange={(e) => setJourneyDate(e.target.value)}
+                    disabled={story}
                   />
                 </label>
                 <label className="field">
@@ -447,6 +526,7 @@ export function JourneyApp() {
                   <select
                     value={coach}
                     onChange={(e) => setCoach(e.target.value as CoachClass)}
+                    disabled={story}
                   >
                     {CLASSES.map((c) => (
                       <option key={c} value={c}>
@@ -456,14 +536,7 @@ export function JourneyApp() {
                   </select>
                 </label>
               </div>
-              {error === "emptyDest" ? (
-                <div className="empty-state">{t(lang, "emptyDest")}</div>
-              ) : null}
-              <p className="maps-note">
-                {mapsKey
-                  ? "Google Map enhance is available via NEXT_PUBLIC_GOOGLE_MAPS_KEY (not used unless set)."
-                  : t(lang, "mapsEnhance")}
-              </p>
+              <p className="maps-note">{mapsKey ? t(lang, "mapsEnhanceOn") : t(lang, "mapsEnhance")}</p>
             </>
           ) : null}
 
@@ -474,7 +547,7 @@ export function JourneyApp() {
               {loading ? (
                 <>
                   <div className="skeleton" />
-                  <div className="skeleton" style={{ marginTop: 12 }} />
+                  <div className="skeleton" />
                 </>
               ) : error === "search" ? (
                 <div className="error-state">
@@ -490,20 +563,23 @@ export function JourneyApp() {
                   <p>{t(lang, "noneBody")}</p>
                 </div>
               ) : (
-                <div className="train-list">
-                  {rows.map((row) => (
-                    <TrainCard
-                      key={row.train.id}
-                      row={row}
-                      lang={lang}
-                      disabled={story}
-                      onPick={() => {
-                        setPicked(row);
-                        setStep("passengers");
-                      }}
-                    />
-                  ))}
-                </div>
+                <>
+                  <p className="hint">{fill(t(lang, "resultsCount"), { n: String(rows.length) })}</p>
+                  <div className="train-list">
+                    {rows.map((row) => (
+                      <TrainCard
+                        key={row.train.id}
+                        row={row}
+                        lang={lang}
+                        disabled={story}
+                        onPick={() => {
+                          setPicked(row);
+                          setStep("passengers");
+                        }}
+                      />
+                    ))}
+                  </div>
+                </>
               )}
             </>
           ) : null}
@@ -573,7 +649,12 @@ export function JourneyApp() {
                     {fill(t(lang, "boardingNeOrigin"), {
                       origin: `${STATION_BY_CODE[picked.catch.originCode].code}`,
                       board: `${STATION_BY_CODE[picked.catch.boardingCode].code}`,
-                      mins: `${picked.train.stops.find((s) => s.stationCode === picked.catch.boardingCode)?.departOffsetMin ?? 0} min`,
+                      mins: fill(t(lang, "boardingMins"), {
+                        n: String(
+                          picked.train.stops.find((s) => s.stationCode === picked.catch.boardingCode)
+                            ?.departOffsetMin ?? 0,
+                        ),
+                      }),
                     })}
                   </p>
                   <p>
@@ -589,7 +670,7 @@ export function JourneyApp() {
                 </p>
               )}
               <p>
-                {t(lang, "fare")}: {formatInrFromPaise(farePaise)} · {travellers.length}{" "}
+                {t(lang, "fare")}: {formatInrFromPaise(farePaise, loc)} · {travellers.length}{" "}
                 {t(lang, "passengers").toLowerCase()}
               </p>
               <p className="hint">{t(lang, "payHint")}</p>
@@ -609,15 +690,13 @@ export function JourneyApp() {
               <p>{t(lang, "recoveryBody")}</p>
               <div className="ledger">
                 <div>
-                  {t(lang, "ledger")} · {t(lang, "debitOnce")} · {formatInrFromPaise(totalDebitedPaise(session))}
+                  {t(lang, "ledger")} · {t(lang, "debitOnce")} · {formatInrFromPaise(totalDebitedPaise(session), loc)}
                 </div>
                 <div>
-                  {t(lang, "noSecond")} · key {session.idempotencyKey}
+                  {t(lang, "noSecond")} · {session.idempotencyKey}
                 </div>
                 {session.ledger.map((e) => (
-                  <div key={e.id}>
-                    {e.kind} · {formatInrFromPaise(e.amountPaise)} · {e.note}
-                  </div>
+                  <div key={e.id}>{ledgerLabel(lang, e)}</div>
                 ))}
               </div>
               <p className="hint">{t(lang, "resumeHint")}</p>

@@ -101,6 +101,27 @@ export const STRINGS = {
     debitOnce: "Debited once",
     noSecond: "Second debit blocked",
     skipMotion: "Reduced motion on — story steps instantly.",
+    mapAria:
+      "Crafted night map of India rail corridors. Drag the pin to set where you are. Works without Google Maps.",
+    seaArabian: "ARABIAN SEA",
+    seaBengal: "BAY OF BENGAL",
+    himalaya: "HIMALAYA",
+    mockRail: "MOCK RAIL · NOT IRCTC",
+    north: "N",
+    mapsEnhanceOn:
+      "Google Map enhance is on via NEXT_PUBLIC_GOOGLE_MAPS_KEY (optional). The night rail map still sits underneath.",
+    minsFmt: "{n} min",
+    hoursFmt: "{n} h",
+    hoursMinsFmt: "{h} h {m} min",
+    ledgerKindDebit: "Debit",
+    ledgerKindResume: "Resume",
+    ledgerNoteDebitPnr: "Single debit. PNR issued.",
+    ledgerNoteDebitNoTicket: "Debit succeeded. Ticket/PNR not issued.",
+    ledgerNoteResumePnr: "Idempotent resume. No second debit. PNR issued against original charge.",
+    ledgerNoteResumeFail: "Idempotent resume. No second debit. Ticket still not issued.",
+    boardingMins: "{n} min",
+    resultsCount: "{n} trains on this corridor",
+    fromStamp: "From this pin",
   },
   hi: {
     brand: "गेट मी होम",
@@ -202,6 +223,27 @@ export const STRINGS = {
     debitOnce: "एक बार डेबिट",
     noSecond: "दूसरी कटौती रोकी गई",
     skipMotion: "कम गति चालू — कहानी तुरंत आगे बढ़ेगी।",
+    mapAria:
+      "भारत के रेल कॉरिडोर का रात वाला मानचित्र। पिन खींचकर अपनी जगह तय करें। गूगल मैप के बिना चलता है।",
+    seaArabian: "अरब सागर",
+    seaBengal: "बंगाल की खाड़ी",
+    himalaya: "हिमालय",
+    mockRail: "काल्पनिक रेल · आईआरसीटीसी नहीं",
+    north: "उ",
+    mapsEnhanceOn:
+      "Google मानचित्र परत चालू है (NEXT_PUBLIC_GOOGLE_MAPS_KEY)। रात की रेल का नक्शा अब भी नीचे है।",
+    minsFmt: "{n} मिनट",
+    hoursFmt: "{n} घंटे",
+    hoursMinsFmt: "{h} घंटे {m} मिनट",
+    ledgerKindDebit: "डेबिट",
+    ledgerKindResume: "पुनः प्रयास",
+    ledgerNoteDebitPnr: "एक डेबिट। पीएनआर जारी।",
+    ledgerNoteDebitNoTicket: "कटौती सफल। टिकट/पीएनआर नहीं बना।",
+    ledgerNoteResumePnr: "वही कुंजी। दूसरी कटौती नहीं। मूल डेबिट पर पीएनआर जारी।",
+    ledgerNoteResumeFail: "वही कुंजी। दूसरी कटौती नहीं। टिकट अभी भी नहीं बनी।",
+    boardingMins: "{n} मिनट",
+    resultsCount: "इस कॉरिडोर पर {n} गाड़ियाँ",
+    fromStamp: "इस पिन से",
   },
 } as const;
 
@@ -214,3 +256,22 @@ export function t(lang: Lang, key: StringKey): string {
 export function fill(template: string, vars: Record<string, string>): string {
   return template.replace(/\{(\w+)\}/g, (_, k: string) => vars[k] ?? "");
 }
+
+export function localeFor(lang: Lang): string {
+  return lang === "hi" ? "hi-IN" : "en-IN";
+}
+
+export function formatTravel(lang: Lang, minutes: number): string {
+  if (minutes < 60) return fill(t(lang, "minsFmt"), { n: String(minutes) });
+  const h = Math.floor(minutes / 60);
+  const m = minutes % 60;
+  if (!m) return fill(t(lang, "hoursFmt"), { n: String(h) });
+  return fill(t(lang, "hoursMinsFmt"), { h: String(h), m: String(m) });
+}
+
+export const LEDGER_NOTE_KEYS: Record<string, StringKey> = {
+  "Single debit. PNR issued.": "ledgerNoteDebitPnr",
+  "Debit succeeded. Ticket/PNR not issued.": "ledgerNoteDebitNoTicket",
+  "Idempotent resume. No second debit. PNR issued against original charge.": "ledgerNoteResumePnr",
+  "Idempotent resume. No second debit. Ticket still not issued.": "ledgerNoteResumeFail",
+};
