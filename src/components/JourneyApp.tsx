@@ -461,8 +461,11 @@ export function JourneyApp() {
                   {destCodes.length ? (
                     <div className="station-chips" aria-live="polite">
                       {destCodes.map((c) => (
-                        <span key={c}>
-                          {c} · {lang === "hi" ? STATION_BY_CODE[c].nameHi : STATION_BY_CODE[c].nameEn}
+                        <span
+                          key={c}
+                          title={lang === "hi" ? STATION_BY_CODE[c].nameHi : STATION_BY_CODE[c].nameEn}
+                        >
+                          {c}
                         </span>
                       ))}
                     </div>

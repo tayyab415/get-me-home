@@ -43,8 +43,8 @@ export const INDIA_VIEW = {
   width: 390,
   height: 520,
   /** Inset so the west coast and Mumbai pin are not clipped at 390px. */
-  padX: 36,
-  padY: 28,
+  padX: 40,
+  padY: 36,
 };
 
 export function project(point: LatLng): { x: number; y: number } {

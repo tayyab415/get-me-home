@@ -170,7 +170,7 @@ export function RailMap({
     <svg
       ref={svgRef}
       className="rail-map"
-      viewBox="0 0 390 520"
+      viewBox="-16 0 422 520"
       preserveAspectRatio="xMidYMid meet"
       role="img"
       aria-label={labels.aria}
@@ -218,8 +218,8 @@ export function RailMap({
           <path d="M39 0 L0 0 0 40" fill="none" stroke="#f4ead5" strokeOpacity="0.05" strokeWidth="0.6" />
         </pattern>
       </defs>
-      <rect width="390" height="520" fill={`url(#${clipId}-night)`} />
-      <rect width="390" height="520" fill={`url(#${clipId}-grid)`} />
+      <rect x="-16" y="0" width="422" height="520" fill={`url(#${clipId}-night)`} />
+      <rect x="-16" y="0" width="422" height="520" fill={`url(#${clipId}-grid)`} />
       <circle cx="318" cy="48" r="70" fill={`url(#${clipId}-moon)`} />
       <circle cx="312" cy="44" r="9" fill="#f4ead5" opacity="0.85" />
       <g className="stars" opacity="0.7">
@@ -234,7 +234,7 @@ export function RailMap({
           />
         ))}
       </g>
-      <circle cx={mumbai.x} cy={mumbai.y} r="46" fill={`url(#${clipId}-city)`} />
+      <circle cx={mumbai.x} cy={mumbai.y} r="34" fill={`url(#${clipId}-city)`} />
       <circle cx={delhi.x} cy={delhi.y} r="38" fill={`url(#${clipId}-city)`} />
       <path d={sri} fill="#121820" stroke="#2a384c" strokeWidth="0.8" opacity="0.55" />
       <path d={mainland} fill={`url(#${clipId}-land)`} stroke="#8aa0c0" strokeWidth="1.35" />

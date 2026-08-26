@@ -15,15 +15,23 @@ export interface StationLabelLayout {
 const CLUSTER_PX = 22;
 
 /** Offsets that keep 3–4 letter codes from overprinting inside a cluster. */
-const FANS: { dx: number; dy: number; anchor: LabelAnchor }[] = [
-  { dx: -12, dy: -14, anchor: "end" },
-  { dx: 12, dy: -14, anchor: "start" },
-  { dx: -13, dy: 16, anchor: "end" },
-  { dx: 13, dy: 16, anchor: "start" },
-  { dx: 0, dy: -26, anchor: "middle" },
+const PAIR: { dx: number; dy: number; anchor: LabelAnchor }[] = [
+  { dx: -14, dy: -12, anchor: "end" },
+  { dx: 14, dy: 12, anchor: "start" },
 ];
 
 const SOLO = { dx: 0, dy: -12, anchor: "middle" as const };
+
+function fanFor(index: number, count: number): { dx: number; dy: number; anchor: LabelAnchor } {
+  if (count <= 1) return SOLO;
+  if (count === 2) return PAIR[index] ?? PAIR[0];
+  const angle = (index / count) * Math.PI * 2 - Math.PI / 2;
+  const r = 18 + count * 5;
+  const dx = Math.cos(angle) * r;
+  const dy = Math.sin(angle) * r * 0.88;
+  const anchor: LabelAnchor = dx < -6 ? "end" : dx > 6 ? "start" : "middle";
+  return { dx, dy, anchor };
+}
 
 export function labelAnchorPoint(layout: StationLabelLayout): { x: number; y: number } {
   return { x: layout.x + layout.dx, y: layout.y + layout.dy };
@@ -61,7 +69,7 @@ export function stationLabelLayout(
     cluster.sort((a, b) => pts[a].x - pts[b].x || pts[a].y - pts[b].y);
     cluster.forEach((idx, k) => {
       assigned[idx] = true;
-      const fan = cluster.length === 1 ? SOLO : FANS[k % FANS.length];
+      const fan = fanFor(k, cluster.length);
       result.push({
         code: pts[idx].code,
         x: pts[idx].x,
