@@ -49,6 +49,10 @@ Covers:
 - Client-side mock rail graph (Mumbai CSMT/BCT/LTT/DR · Delhi NDLS/NZM · Konkan PNVL/RN/MAO)
 - No live IRCTC
 
+## Hackathon submission
+
+Paste-ready project summary and two-minute video shot list: [SUBMISSION.md](./SUBMISSION.md).
+
 ## Live preview
 
 The durable source is the GitHub repository:
