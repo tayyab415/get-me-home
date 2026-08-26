@@ -2,6 +2,7 @@
 
 import { useId, useMemo, useRef, useState } from "react";
 import { project, unproject, type LatLng } from "@/lib/geo";
+import { stationLabelLayout } from "@/lib/map-labels";
 import { RAIL_CORRIDORS, STATIONS, stationLatLng } from "@/lib/rail-graph";
 
 const INDIA_RING: LatLng[] = [
@@ -135,6 +136,11 @@ export function RailMap({
   const water = useMemo(() => toPath(KONKAN_WATER), []);
   const mumbai = project({ lat: 19.076, lng: 72.8777 });
   const delhi = project({ lat: 28.6139, lng: 77.209 });
+  const labelsByCode = useMemo(() => {
+    const map = new Map<string, ReturnType<typeof stationLabelLayout>[number]>();
+    for (const row of stationLabelLayout(STATIONS)) map.set(row.code, row);
+    return map;
+  }, []);
   const denseType = /[\u0900-\u097F]/.test(labels.arabian);
   const geoFont = denseType
     ? "var(--font-ui), sans-serif"
@@ -164,7 +170,8 @@ export function RailMap({
     <svg
       ref={svgRef}
       className="rail-map"
-      viewBox="0 0 390 520"
+      viewBox="-16 0 422 520"
+      preserveAspectRatio="xMidYMid meet"
       role="img"
       aria-label={labels.aria}
       onPointerDown={(e) => {
@@ -211,8 +218,8 @@ export function RailMap({
           <path d="M39 0 L0 0 0 40" fill="none" stroke="#f4ead5" strokeOpacity="0.05" strokeWidth="0.6" />
         </pattern>
       </defs>
-      <rect width="390" height="520" fill={`url(#${clipId}-night)`} />
-      <rect width="390" height="520" fill={`url(#${clipId}-grid)`} />
+      <rect x="-16" y="0" width="422" height="520" fill={`url(#${clipId}-night)`} />
+      <rect x="-16" y="0" width="422" height="520" fill={`url(#${clipId}-grid)`} />
       <circle cx="318" cy="48" r="70" fill={`url(#${clipId}-moon)`} />
       <circle cx="312" cy="44" r="9" fill="#f4ead5" opacity="0.85" />
       <g className="stars" opacity="0.7">
@@ -227,7 +234,7 @@ export function RailMap({
           />
         ))}
       </g>
-      <circle cx={mumbai.x} cy={mumbai.y} r="46" fill={`url(#${clipId}-city)`} />
+      <circle cx={mumbai.x} cy={mumbai.y} r="34" fill={`url(#${clipId}-city)`} />
       <circle cx={delhi.x} cy={delhi.y} r="38" fill={`url(#${clipId}-city)`} />
       <path d={sri} fill="#121820" stroke="#2a384c" strokeWidth="0.8" opacity="0.55" />
       <path d={mainland} fill={`url(#${clipId}-land)`} stroke="#8aa0c0" strokeWidth="1.35" />
@@ -260,6 +267,7 @@ export function RailMap({
         const p = project({ lat: s.lat, lng: s.lng });
         const dest = destCodes.includes(s.code);
         const board = highlightBoarding === s.code;
+        const label = labelsByCode.get(s.code);
         return (
           <g key={s.code} transform={`translate(${p.x} ${p.y})`}>
             {dest || board ? (
@@ -277,9 +285,13 @@ export function RailMap({
               strokeWidth="1.2"
             />
             <text
-              y="-11"
-              textAnchor="middle"
+              x={label?.dx ?? 0}
+              y={label?.dy ?? -12}
+              textAnchor={label?.anchor ?? "middle"}
               fill="#f4ead5"
+              stroke="#05070b"
+              strokeWidth="2.6"
+              paintOrder="stroke"
               fontSize="8.5"
               fontFamily="var(--font-display), sans-serif"
               letterSpacing="0.1em"

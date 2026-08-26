@@ -28,7 +28,11 @@
 html,
 body {
   margin: 0;
-  min-height: 100%;
+  height: 100%;
+  height: 100dvh;
+  max-height: 100dvh;
+  max-width: 100%;
+  overflow: hidden;
   background: var(--ink);
   color: var(--cream);
 }
@@ -36,6 +40,8 @@ body {
 body {
   font-family: var(--font-ui), "Noto Sans Devanagari", Georgia, serif;
   text-rendering: optimizeLegibility;
+  display: flex;
+  flex-direction: column;
   background:
     radial-gradient(920px 480px at 88% -8%, rgba(240, 162, 2, 0.14), transparent 58%),
     radial-gradient(760px 520px at -10% 108%, rgba(47, 158, 107, 0.12), transparent 52%),
@@ -88,6 +94,8 @@ button {
   position: sticky;
   top: 0;
   z-index: 80;
+  flex-shrink: 0;
+  overflow: hidden;
   min-height: 52px;
   padding: 8px 18px 10px;
   display: flex;
@@ -143,9 +151,22 @@ button {
 }
 
 .app {
-  min-height: calc(100dvh - var(--banner));
+  flex: 1 1 auto;
+  min-height: 0;
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
+  --dock-height: 120px;
+}
+
+.app[data-dock="stacked"] {
+  --dock-height: 180px;
+}
+
+.app[data-dock="none"] {
+  --dock-height: 0px;
 }
 
 .topbar {
@@ -155,6 +176,13 @@ button {
   gap: 12px;
   padding: 8px 16px 6px;
   min-height: 56px;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.brand-block {
+  min-width: 0;
+  flex: 1 1 auto;
 }
 
 .brand-block h1 {
@@ -195,6 +223,7 @@ html[lang="hi"] .kicker {
 
 .lang-toggle {
   display: inline-flex;
+  flex-shrink: 0;
   border: 1px solid var(--mist-2);
   border-radius: 999px;
   overflow: hidden;
@@ -221,6 +250,9 @@ html[lang="hi"] .kicker {
 
 .stage {
   flex: 1;
+  min-height: 0;
+  min-width: 0;
+  max-width: 100%;
   display: grid;
   grid-template-rows: minmax(300px, 58vh) 1fr;
 }
@@ -234,18 +266,24 @@ html[lang="hi"] .kicker {
   .stage.is-flow {
     grid-template-rows: none;
     grid-template-columns: 1.18fr 0.82fr;
-    min-height: calc(100dvh - var(--banner) - 56px);
+    min-height: 0;
   }
 
   .sheet {
-    min-height: calc(100dvh - var(--banner) - 56px);
+    min-height: 0;
     padding-bottom: 12px;
+  }
+
+  .dock-clearance {
+    display: none;
   }
 }
 
 .map-wrap {
   position: relative;
   overflow: hidden;
+  min-width: 0;
+  max-width: 100%;
   background: #070b12;
   border-bottom: 1px solid var(--mist);
 }
@@ -264,13 +302,15 @@ html[lang="hi"] .kicker {
   .map-wrap {
     border-bottom: 0;
     border-right: 1px solid var(--mist);
-    min-height: calc(100dvh - var(--banner) - 56px);
+    min-height: 0;
   }
 }
 
 .rail-map {
   width: 100%;
   height: 100%;
+  max-width: 100%;
+  max-height: 100%;
   display: block;
   touch-action: none;
   cursor: grab;
@@ -363,6 +403,8 @@ html[lang="hi"] .kicker {
   flex-direction: column;
   gap: 8px;
   pointer-events: none;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 .map-hud > * {
@@ -376,6 +418,7 @@ html[lang="hi"] .kicker {
   border-radius: 16px;
   padding: 10px 12px 12px;
   box-shadow: 0 16px 40px rgba(0, 0, 0, 0.35);
+  max-width: 100%;
 }
 
 .hud-card label.field {
@@ -410,9 +453,11 @@ html[lang="hi"] .kicker {
   right: 10px;
   display: flex;
   justify-content: space-between;
+  flex-wrap: wrap;
   gap: 8px;
   pointer-events: none;
   z-index: 6;
+  max-width: 100%;
 }
 
 .chip {
@@ -423,21 +468,33 @@ html[lang="hi"] .kicker {
   border-radius: 999px;
   padding: 8px 12px;
   min-height: 44px;
+  max-width: 100%;
   display: inline-flex;
   align-items: center;
   font-size: 0.78rem;
   backdrop-filter: blur(10px);
+  white-space: normal;
+  overflow-wrap: anywhere;
 }
 
 .sheet {
-  padding: 14px 16px calc(var(--cta) + var(--safe-bottom) + 18px);
-  overflow: auto;
+  padding: 14px 16px 16px;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
   display: flex;
   flex-direction: column;
   min-height: 0;
+  min-width: 0;
+  max-width: 100%;
+  scroll-padding-bottom: calc(var(--dock-height) + 24px);
   background:
     linear-gradient(180deg, rgba(244, 234, 213, 0.04), transparent 80px),
     var(--ink);
+}
+
+.sheet > * {
+  flex-shrink: 0;
 }
 
 .story-btn {
@@ -472,6 +529,7 @@ html[lang="hi"] .story-btn {
   font-size: 0.88rem;
   line-height: 1.45;
   margin: 0 0 14px;
+  overflow-wrap: anywhere;
 }
 
 label.field {
@@ -511,6 +569,11 @@ label.field select {
   display: grid;
   grid-template-columns: 1.2fr 0.8fr;
   gap: 10px;
+  min-width: 0;
+}
+
+.row-2 > * {
+  min-width: 0;
 }
 
 .station-chips {
@@ -543,6 +606,23 @@ label.field select {
   padding: 10px 16px var(--safe-bottom);
   background: linear-gradient(180deg, transparent, var(--ink) 28%);
   z-index: 30;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.dock-clearance {
+  flex-shrink: 0;
+  height: calc(var(--dock-height) + 16px);
+  min-height: 88px;
+  width: 100%;
+  pointer-events: none;
+}
+
+.app[data-dock="stacked"] .dock-clearance {
+  min-height: 176px;
 }
 
 @media (min-width: 900px) {
@@ -558,16 +638,22 @@ label.field select {
 
 .cta {
   width: 100%;
+  max-width: 100%;
   min-height: var(--cta);
+  height: auto;
   border: 0;
   border-radius: 16px;
+  padding: 12px 14px;
   background: var(--amber);
   color: #1a1204;
   font-weight: 800;
   font-family: var(--font-display), var(--font-ui), sans-serif;
   font-size: 1.12rem;
   letter-spacing: 0.06em;
+  line-height: 1.2;
   text-transform: uppercase;
+  white-space: normal;
+  overflow-wrap: anywhere;
   box-shadow: 0 10px 24px rgba(240, 162, 2, 0.22);
 }
 
@@ -598,13 +684,16 @@ html[lang="hi"] .cta {
 
 .cta-row {
   display: grid;
-  grid-template-columns: 44px 1fr;
+  grid-template-columns: 44px minmax(0, 1fr);
   gap: 8px;
+  align-items: stretch;
+  min-width: 0;
 }
 
 .icon-btn {
   min-width: 44px;
   min-height: 44px;
+  height: auto;
   border-radius: 14px;
   border: 1px solid var(--mist-2);
   background: var(--ink-2);
@@ -672,12 +761,16 @@ html[lang="hi"] .cta {
   justify-content: space-between;
   gap: 8px;
   align-items: baseline;
+  flex-wrap: wrap;
+  min-width: 0;
 }
 
 .train-name {
   font-family: var(--font-ticket), Georgia, serif;
   font-size: 1.28rem;
   margin: 0;
+  overflow-wrap: anywhere;
+  min-width: 0;
 }
 
 .sheet > .train-name {
@@ -762,6 +855,7 @@ html[lang="hi"] .board-time small {
   font-size: 0.9rem;
   line-height: 1.4;
   margin: 8px 0;
+  overflow-wrap: anywhere;
 }
 
 .clock-callout {
@@ -772,10 +866,11 @@ html[lang="hi"] .board-time small {
 
 .passenger {
   display: grid;
-  grid-template-columns: 1fr 72px 44px;
+  grid-template-columns: minmax(0, 1fr) 72px 44px;
   gap: 8px;
   margin-bottom: 10px;
   align-items: end;
+  min-width: 0;
 }
 
 .ticket {
@@ -784,6 +879,9 @@ html[lang="hi"] .board-time small {
   border-radius: 8px 8px 12px 12px;
   padding: 18px 16px 20px;
   position: relative;
+  max-width: 100%;
+  overflow: hidden;
+  flex-shrink: 0;
   font-family: var(--font-ticket), Georgia, serif;
   box-shadow: 0 18px 40px rgba(0, 0, 0, 0.35);
   background-image:
@@ -858,6 +956,8 @@ html[lang="hi"] .board-time small {
   border-radius: 18px;
   padding: 16px;
   position: relative;
+  max-width: 100%;
+  overflow-wrap: anywhere;
 }
 
 .recovery::before {
@@ -883,6 +983,9 @@ html[lang="hi"] .board-time small {
   border-radius: 10px;
   padding: 10px;
   margin: 12px 0;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .skeleton {

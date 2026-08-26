@@ -42,19 +42,26 @@ export const INDIA_VIEW = {
   north: 36.8,
   width: 390,
   height: 520,
+  /** Inset so the west coast and Mumbai pin are not clipped at 390px. */
+  padX: 40,
+  padY: 36,
 };
 
 export function project(point: LatLng): { x: number; y: number } {
-  const { west, east, south, north, width, height } = INDIA_VIEW;
-  const x = ((point.lng - west) / (east - west)) * width;
-  const y = ((north - point.lat) / (north - south)) * height;
+  const { west, east, south, north, width, height, padX, padY } = INDIA_VIEW;
+  const innerW = width - padX * 2;
+  const innerH = height - padY * 2;
+  const x = padX + ((point.lng - west) / (east - west)) * innerW;
+  const y = padY + ((north - point.lat) / (north - south)) * innerH;
   return { x, y };
 }
 
 export function unproject(x: number, y: number): LatLng {
-  const { west, east, south, north, width, height } = INDIA_VIEW;
+  const { west, east, south, north, width, height, padX, padY } = INDIA_VIEW;
+  const innerW = width - padX * 2;
+  const innerH = height - padY * 2;
   return {
-    lng: west + (x / width) * (east - west),
-    lat: north - (y / height) * (north - south),
+    lng: west + ((x - padX) / innerW) * (east - west),
+    lat: north - ((y - padY) / innerH) * (north - south),
   };
 }

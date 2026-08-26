@@ -104,6 +104,8 @@ export function JourneyApp() {
   const cancelRef = useRef({ cancelled: false });
   const payLockRef = useRef(false);
   const storyLockRef = useRef(false);
+  const appRef = useRef<HTMLDivElement>(null);
+  const dockRef = useRef<HTMLDivElement>(null);
   const mapsKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_KEY;
   const monsoon = destCodes.includes("MAO") || destCodes.includes("RN") || Boolean(picked?.train.monsoonWatch);
   const loc = localeFor(lang);
@@ -367,9 +369,38 @@ export function JourneyApp() {
 
   const highlight = picked?.catch.boardingCode;
   const activeMark = markIndex(step);
+  const showDock = Boolean(primaryCta) || step === "results";
+  const stackedDock =
+    step === "review" && Boolean(primaryCta && "extra" in primaryCta && primaryCta.extra);
+
+  useEffect(() => {
+    const dock = dockRef.current;
+    const app = appRef.current;
+    if (!app) return;
+    if (!dock || !showDock) {
+      app.style.setProperty("--dock-height", "0px");
+      return;
+    }
+    const apply = () => {
+      const h = Math.ceil(dock.getBoundingClientRect().height);
+      app.style.setProperty("--dock-height", `${Math.max(h, 56)}px`);
+    };
+    apply();
+    const ro = new ResizeObserver(apply);
+    ro.observe(dock);
+    window.addEventListener("resize", apply);
+    return () => {
+      ro.disconnect();
+      window.removeEventListener("resize", apply);
+    };
+  }, [showDock, stackedDock, step, lang, primaryCta?.label, story]);
 
   return (
-    <div className="app">
+    <div
+      className="app"
+      ref={appRef}
+      data-dock={showDock ? (stackedDock ? "stacked" : "single") : "none"}
+    >
       <header className="topbar">
         <div className="brand-block">
           <p className="kicker">{t(lang, "kicker")}</p>
@@ -430,8 +461,11 @@ export function JourneyApp() {
                   {destCodes.length ? (
                     <div className="station-chips" aria-live="polite">
                       {destCodes.map((c) => (
-                        <span key={c}>
-                          {c} · {lang === "hi" ? STATION_BY_CODE[c].nameHi : STATION_BY_CODE[c].nameEn}
+                        <span
+                          key={c}
+                          title={lang === "hi" ? STATION_BY_CODE[c].nameHi : STATION_BY_CODE[c].nameEn}
+                        >
+                          {c}
                         </span>
                       ))}
                     </div>
@@ -728,63 +762,65 @@ export function JourneyApp() {
             />
           ) : null}
 
-          {primaryCta && step !== "results" ? (
-            <div className="cta-dock">
-              {step !== "map" &&
-              step !== "ticket" &&
-              step !== "failed" &&
-              step !== "paying" &&
-              step !== "recovery" ? (
-                <div className="cta-row">
-                  <button
-                    type="button"
-                    className="icon-btn"
-                    aria-label={t(lang, "back")}
-                    onClick={() => {
-                      if (step === "passengers") setStep("results");
-                      else if (step === "review") setStep("passengers");
-                    }}
-                  >
-                    ←
-                  </button>
-                  <button
-                    type="button"
-                    className="cta"
-                    disabled={primaryCta.disabled}
-                    onClick={primaryCta.action}
-                  >
-                    {primaryCta.label}
-                  </button>
-                </div>
-              ) : (
-                <button
-                  type="button"
-                  className="cta"
-                  disabled={primaryCta.disabled}
-                  onClick={primaryCta.action}
-                >
-                  {primaryCta.label}
+          {showDock ? (
+            <div className={`cta-dock${stackedDock ? " is-stacked" : ""}`} ref={dockRef}>
+              {step === "results" ? (
+                <button type="button" className="cta ghost" onClick={() => setStep("map")}>
+                  {t(lang, "back")}
                 </button>
-              )}
-              {step === "review" && "extra" in primaryCta && primaryCta.extra ? (
-                <button
-                  type="button"
-                  className="cta ghost"
-                  style={{ marginTop: 8 }}
-                  onClick={primaryCta.extra.action}
-                  disabled={story}
-                >
-                  {primaryCta.extra.label}
-                </button>
+              ) : primaryCta ? (
+                <>
+                  {step !== "map" &&
+                  step !== "ticket" &&
+                  step !== "failed" &&
+                  step !== "paying" &&
+                  step !== "recovery" ? (
+                    <div className="cta-row">
+                      <button
+                        type="button"
+                        className="icon-btn"
+                        aria-label={t(lang, "back")}
+                        onClick={() => {
+                          if (step === "passengers") setStep("results");
+                          else if (step === "review") setStep("passengers");
+                        }}
+                      >
+                        ←
+                      </button>
+                      <button
+                        type="button"
+                        className="cta"
+                        disabled={primaryCta.disabled}
+                        onClick={primaryCta.action}
+                      >
+                        {primaryCta.label}
+                      </button>
+                    </div>
+                  ) : (
+                    <button
+                      type="button"
+                      className="cta"
+                      disabled={primaryCta.disabled}
+                      onClick={primaryCta.action}
+                    >
+                      {primaryCta.label}
+                    </button>
+                  )}
+                  {stackedDock && "extra" in primaryCta && primaryCta.extra ? (
+                    <button
+                      type="button"
+                      className="cta ghost"
+                      onClick={primaryCta.extra.action}
+                      disabled={story}
+                    >
+                      {primaryCta.extra.label}
+                    </button>
+                  ) : null}
+                </>
               ) : null}
             </div>
-          ) : step === "results" ? (
-            <div className="cta-dock">
-              <button type="button" className="cta ghost" onClick={() => setStep("map")}>
-                {t(lang, "back")}
-              </button>
-            </div>
           ) : null}
+          {showDock ? <div className="dock-clearance" aria-hidden="true" /> : null}
         </section>
       </div>
     </div>
