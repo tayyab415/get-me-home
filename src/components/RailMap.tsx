@@ -2,6 +2,7 @@
 
 import { useId, useMemo, useRef, useState } from "react";
 import { project, unproject, type LatLng } from "@/lib/geo";
+import { stationLabelLayout } from "@/lib/map-labels";
 import { RAIL_CORRIDORS, STATIONS, stationLatLng } from "@/lib/rail-graph";
 
 const INDIA_RING: LatLng[] = [
@@ -135,6 +136,11 @@ export function RailMap({
   const water = useMemo(() => toPath(KONKAN_WATER), []);
   const mumbai = project({ lat: 19.076, lng: 72.8777 });
   const delhi = project({ lat: 28.6139, lng: 77.209 });
+  const labelsByCode = useMemo(() => {
+    const map = new Map<string, ReturnType<typeof stationLabelLayout>[number]>();
+    for (const row of stationLabelLayout(STATIONS)) map.set(row.code, row);
+    return map;
+  }, []);
   const denseType = /[\u0900-\u097F]/.test(labels.arabian);
   const geoFont = denseType
     ? "var(--font-ui), sans-serif"
@@ -165,6 +171,7 @@ export function RailMap({
       ref={svgRef}
       className="rail-map"
       viewBox="0 0 390 520"
+      preserveAspectRatio="xMidYMid meet"
       role="img"
       aria-label={labels.aria}
       onPointerDown={(e) => {
@@ -260,6 +267,7 @@ export function RailMap({
         const p = project({ lat: s.lat, lng: s.lng });
         const dest = destCodes.includes(s.code);
         const board = highlightBoarding === s.code;
+        const label = labelsByCode.get(s.code);
         return (
           <g key={s.code} transform={`translate(${p.x} ${p.y})`}>
             {dest || board ? (
@@ -277,9 +285,13 @@ export function RailMap({
               strokeWidth="1.2"
             />
             <text
-              y="-11"
-              textAnchor="middle"
+              x={label?.dx ?? 0}
+              y={label?.dy ?? -12}
+              textAnchor={label?.anchor ?? "middle"}
               fill="#f4ead5"
+              stroke="#05070b"
+              strokeWidth="2.6"
+              paintOrder="stroke"
               fontSize="8.5"
               fontFamily="var(--font-display), sans-serif"
               letterSpacing="0.1em"
